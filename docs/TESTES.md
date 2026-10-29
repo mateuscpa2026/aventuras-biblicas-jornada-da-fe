@@ -27,11 +27,12 @@ Os dois imprimem `=== N checagens, 0 falhas ===` e terminam com código de saíd
 `0`. Qualquer falha imprime `[test] FAIL ...`/`[world] FAIL ...` e o processo
 sai com código `1` (útil para CI).
 
-> Os testes não rodam a janela do jogo nem simulam entrada de teclado/mouse.
-> Eles exercitam os nós reais das cenas chamando os métodos de interação e os
-> sistemas de missão, diálogo, save e quiz.
+> Os testes não rodam a janela do jogo nem simulam teclado; o mouse é injetado
+> como evento real no `PlayerCamera` para conferir o olhar, os limites de
+> inclinação e o zoom. Eles exercitam os nós reais das cenas chamando os métodos
+> de interação e os sistemas de missão, diálogo, save e quiz.
 
-## `smoke_test` — sistemas e dados (491 checagens)
+## `smoke_test` — sistemas e dados (580 checagens)
 
 Cobre:
 
@@ -72,13 +73,23 @@ Cobre:
   inválido; a `CharacterSelectScreen` cria quatro cartões e quatro prévias 3D,
   atualiza enquanto aberta, marca a escolha, emite `changed` ao confirmar e
   desliga a renderização ao fechar.
+- **Personagens principais**: cada capítulo aponta para dois membros válidos do
+  `StoryCast` (Adão e Eva, Noé e Sem, Davi e Samuel, Moisés e Miriã, Jesus e
+  Maria); os dez registros têm nome, papel e visual completo e montam o retrato
+  3D; a junção de nomes usa “e”/vírgula corretamente.
+- **Abertura com retratos**: o `IntroOverlay` mostra dois `SubViewport` 3D por
+  capítulo, renderiza enquanto está aberto, exibe os nomes corretos, troca o
+  elenco ao mudar de capítulo, cabe em 720p e desliga a renderização ao fechar.
+- **Câmera com mouse**: injeta `InputEventMouseMotion` e confere que a câmera
+  gira na horizontal, inclina na vertical, respeita os limites de −58°/26°,
+  ignora o mouse quando os controles estão desligados e aproxima com a roda.
 - **Botão flutuante**: uma interação cria o `PromptBadge`, mostra a ação pedida
   e o esconde ao sair de perto.
 
 O teste salva uma cópia do save do jogador no início e restaura no final, então
 rodá-lo não apaga progresso real.
 
-## `world_test` — integração das cenas (381 checagens)
+## `world_test` — integração das cenas (391 checagens)
 
 Para cada um dos cinco mundos (`eden`, `ark`, `david`, `moses`, `jesus`),
 instancia a cena real e verifica:
@@ -90,6 +101,8 @@ instancia a cena real e verifica:
   confere `is_on_floor()` e que ele não atravessou o cenário;
 - pelo menos 6 objetos interativos e pelo menos 2 NPCs com diálogo e nome
   (Moisés usa 4 viajantes em vez de animais);
+- os personagens principais listados em `cast` existem como NPCs do mundo
+  (Adão, Eva, Noé, Sem, Davi, Samuel, Moisés, Miriã, Jesus e Maria);
 - cada animal tem rig montado, cabeça e olhos visíveis, quatro patas (exceto
   peixe e pássaro), nome e texto de ação preenchidos; os que podem acompanhar
   têm raio de interação válido;
@@ -117,8 +130,8 @@ Windows 10 x64):
 
 | Suíte | Checagens | Falhas | Saída |
 | --- | ---: | ---: | --- |
-| `smoke_test.tscn` | 491 | 0 | `0` |
-| `world_test.tscn` | 381 | 0 | `0` |
+| `smoke_test.tscn` | 580 | 0 | `0` |
+| `world_test.tscn` | 391 | 0 | `0` |
 
 ### Aviso esperado ao sair (headless)
 

@@ -12,6 +12,7 @@
 		"verse_ref": "Gênesis 1:31",
 		"verse_text": "Deus olhou para tudo o que havia feito e viu que era muito bom.",
 		"verse_kind": "paráfrase",
+		"cast": ["adao", "eva"],
 		"stories": ["criacao", "eden_jardim", "eden_animais"]
 	},
 	{
@@ -27,6 +28,7 @@
 		"verse_ref": "Gênesis 9:13",
 		"verse_text": "Deus colocou o arco-íris nas nuvens como sinal da sua promessa.",
 		"verse_kind": "paráfrase",
+		"cast": ["noe", "sem"],
 		"stories": ["arca_construcao", "diluvio", "arco_iris"]
 	},
 	{
@@ -42,6 +44,7 @@
 		"verse_ref": "1 Samuel 17:45",
 		"verse_text": "Davi disse que ia enfrentar o gigante em nome do Senhor dos Exércitos.",
 		"verse_kind": "paráfrase",
+		"cast": ["davi", "samuel"],
 		"stories": ["davi_pastor", "davi_golias", "coragem_fe"]
 	},
 	{
@@ -57,6 +60,7 @@
 		"verse_ref": "Êxodo 14:21-22",
 		"verse_text": "O mar se abriu e o povo atravessou em terra seca.",
 		"verse_kind": "paráfrase",
+		"cast": ["moises", "miria"],
 		"stories": ["moses_chamado", "mar_vermelho", "povo_liberdade"]
 	},
 	{
@@ -72,6 +76,7 @@
 		"verse_ref": "Mateus 22:37-39",
 		"verse_text": "Ame a Deus de todo o coração e ame o seu próximo como a si mesmo.",
 		"verse_kind": "paráfrase",
+		"cast": ["jesus", "maria"],
 		"stories": ["bom_samaritano", "ovelha_perdida", "filho_prodigo"]
 	}
 ]

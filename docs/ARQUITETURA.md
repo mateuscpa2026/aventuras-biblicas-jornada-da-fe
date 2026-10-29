@@ -155,8 +155,12 @@ Arquivo: `user://jornada_da_fe_save.json` (no Windows,
 salto, `move_and_slide`, detecção de chão, queda segura para o spawn e foco
 automático no interativo mais próximo. `PlayerCamera` é um `SpringArm3D` com
 colisão (evita atravessar paredes), zoom na roda, mira com aproximação e
-sensibilidade configurável. As animações são procedurais (`StylizedRig` e
-`AnimalRig`): caminhada, corrida, salto, gesto de interação e comemoração.
+sensibilidade configurável. O olhar é lido em `_input`, então o mouse não é
+engolido pela interface, e funciona mesmo se o sistema recusar a captura do
+cursor; `enabled` desliga o olhar quando há modal aberto. `main.gd` recaptura o
+mouse ao fechar um modal, ao voltar o foco à janela e ao clicar na tela. As
+animações são procedurais (`StylizedRig` e `AnimalRig`): caminhada, corrida,
+salto, gesto de interação e comemoração.
 
 `StylizedRig` aceita um dicionário de aparência: `gender`, `outfit`
 (`tunic`/`robe`/`dress`), `hair_style` (`short`/`long`/`braid`/`bun`/`bald`),
@@ -183,6 +187,22 @@ A escolha é validada e persistida por `SaveSystem.player_look` (com sinal
 `player_look_changed`); `PlayerLooks.is_valid()` protege contra ids inválidos e
 o padrão é `josue`. O `PlayerCharacter` aplica o look salvo ao entrar em cada
 mundo, e a tela pode ser aberta pelo menu a qualquer momento.
+
+### Personagens principais de cada capítulo
+
+`scripts/characters/story_cast.gd` (`StoryCast`) registra os dez personagens
+bíblicos que protagonizam os capítulos — Adão e Eva, Noé e Sem, Davi e Samuel,
+Moisés e Miriã, Jesus e Maria — com nome, papel e o mesmo dicionário de
+aparência usado pelo `StylizedRig`. `data/chapters.json` liga cada capítulo ao
+seu elenco no campo `cast`; os mundos criam os NPCs com `StoryCast.look(id)`,
+então o retrato e o boneco no mundo são idênticos. Samuel é o profeta que ungiu
+Davi (1 Samuel 16), e não o sacerdote Eli de outra passagem.
+
+O `IntroOverlay` monta dois `SubViewport` 240×240 transparentes com `World3D`
+próprio, medalhão colorido e três luzes para os retratos de busto; eles só
+renderizam (`UPDATE_ALWAYS`) enquanto a abertura está visível e voltam a
+`UPDATE_DISABLED` ao começar. Os cartões do mapa mostram os mesmos nomes em
+“Personagens · …”.
 
 ### Animais
 

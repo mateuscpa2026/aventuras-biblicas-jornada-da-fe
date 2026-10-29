@@ -76,19 +76,10 @@ func _build_pen() -> void:
 	_pen = Props.marker(self, Vector3(-12, 0.1, -3), "Pen")
 
 func _build_characters() -> void:
-	add_npc("davi", "Davi", Vector3(0, 0, -1), {
-		"skin": Color("#d9a47c"), "hair": Color("#a85f34"), "tunic": Color("#b98a62"),
-		"trim": Color("#d9a441"), "pants": Color("#7a5f42"), "shoe": Color("#4d3a2a"),
-		"gender": "male", "outfit": "tunic", "hair_style": "short", "headwear": "headband",
-		"cloak": Color("#8a5a3a"), "sash": Color("#d9a441"),
-	}, Vector3(0, 0, 15))
-	add_npc("eli", "Eli", Vector3(-6.5, 0, 4), {
-		"skin": Color("#b98a63"), "hair": Color("#5a4632"), "beard": Color("#5a4632"),
-		"tunic": Color("#8a9e6a"), "trim": Color("#c9a06a"), "pants": Color("#6b5a4a"),
-		"shoe": Color("#4d3a2a"), "scale": 1.03,
-		"gender": "male", "outfit": "robe", "hair_style": "short", "headwear": "turban",
-		"veil": Color("#c9b08a"), "sash": Color("#c9a06a"),
-	}, Vector3(0, 0, 15))
+	add_npc("davi", StoryCast.display_name("davi"), Vector3(0, 0, -1),
+		StoryCast.look("davi"), Vector3(0, 0, 15))
+	add_npc("samuel", StoryCast.display_name("samuel"), Vector3(-6.5, 0, 4),
+		StoryCast.look("samuel"), Vector3(0, 0, 15))
 
 	var sheep_spots := [Vector3(6, 0, 5), Vector3(-2, 0, 10), Vector3(12, 0, -2)]
 	for position in sheep_spots:

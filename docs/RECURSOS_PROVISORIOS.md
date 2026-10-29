@@ -11,7 +11,7 @@ Nada aqui está "faltando" para o jogo rodar — são pontos de melhoria artíst
 
 | Recurso | Situação | Onde |
 | --- | --- | --- |
-| Personagens (jogador e NPCs) | malhas primitivas detalhadas (rosto, mãos, cabelo, véu, turbante, barba, joias, sandálias), roupas masculinas/femininas e animação procedural; quatro exploradores jogáveis com nomes bíblicos (Josué, Daniel, Ester e Sara) e prévia 3D | `scripts/player/stylized_rig.gd`, `scripts/player/player_looks.gd`, `scripts/characters/npc.gd` |
+| Personagens (jogador e NPCs) | malhas primitivas detalhadas (rosto, mãos, cabelo, véu, turbante, barba, joias, sandálias), roupas masculinas/femininas e animação procedural; quatro exploradores jogáveis com nomes bíblicos (Josué, Daniel, Ester e Sara) e prévia 3D; dez personagens principais (Adão, Eva, Noé, Sem, Davi, Samuel, Moisés, Miriã, Jesus e Maria) com retratos 3D na abertura | `scripts/player/stylized_rig.gd`, `scripts/player/player_looks.gd`, `scripts/characters/story_cast.gd`, `scripts/characters/npc.gd` |
 | Animais | malhas primitivas + animação procedural (patas articuladas, orelhas, asas, cauda, olhos com brilho e piscadas) | `scripts/characters/animal_rig.gd` |
 | Cenário (árvores, rochas, tendas, mercado, arca, montanha) | geometria procedural | `scripts/worlds/props.gd`, `scripts/worlds/*.gd` |
 | Céu, luz, névoa, colinas | `WorldEnvironment` procedural | `scripts/worlds/env_builder.gd` |

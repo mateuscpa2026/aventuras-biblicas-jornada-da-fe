@@ -11,6 +11,11 @@ modelados por código, com roupas masculinas (túnica/manto) e femininas
 entre quatro exploradores com nomes bíblicos — **Josué e Daniel** (meninos),
 **Ester e Sara** (meninas) — em uma tela com prévia 3D de cada um; a escolha
 fica salva e pode ser trocada no menu.
+
+Cada capítulo destaca os **personagens principais da história** — Adão e Eva,
+Noé e Sem, Davi e Samuel, Moisés e Miriã, Jesus e Maria — em retratos 3D na
+abertura e nos cartões do mapa. Eles são os mesmos NPCs com quem a criança
+conversa no mundo.
 Os animais (ovelha, cabra, burro, cervo, coelho, pássaro e peixe) também são
 modelados por código, com lã em camadas, focinho, olhos com brilho e pálpebras,
 patas articuladas, cauda e animações de respiração, pastar e comemorar. Ao
@@ -91,11 +96,11 @@ rejogados pelo menu **Capítulos**; os pergaminhos já guardados permanecem no
 ## Testes automatizados
 
 ```bash
-# 1) Sistemas, dados, missões, save, personagens, seleção e áudio (491 checagens)
+# 1) Sistemas, dados, missões, save, personagens, câmera e áudio (580 checagens)
 Godot_v4.7.2-stable_win64_console.exe --headless --path . res://tests/smoke_test.tscn
 
 # 2) Integração das cinco cenas: jogador, colisão, NPCs, animais, diálogo,
-#    pergaminhos, pedra da memória e conclusão de capítulo (381 checagens)
+#    pergaminhos, pedra da memória e conclusão de capítulo (391 checagens)
 Godot_v4.7.2-stable_win64_console.exe --headless --path . res://tests/world_test.tscn
 ```
 
@@ -156,10 +161,13 @@ Documentação complementar:
 
 - Os cinco capítulos existem, são jogáveis e concluíveis; a progressão
   desbloqueia o capítulo seguinte e o save sobrevive a recarregar/corromper.
-- `491` checagens de sistemas + `381` checagens de cenas, **0 falhas**.
+- `580` checagens de sistemas + `391` checagens de cenas, **0 falhas**.
 - A criança escolhe entre quatro exploradores com nomes bíblicos — dois meninos
   (Josué e Daniel) e duas meninas (Ester e Sara) — com prévia 3D; a escolha é
   persistida e aplicada em todos os mundos.
+- Cada capítulo exibe seus personagens bíblicos principais em retratos 3D na
+  abertura e nos cartões do mapa; os retratos usam o mesmo visual dos NPCs e
+  param de renderizar quando a tela fecha.
 - As seis trilhas foram refeitas com forma de 48 compassos e orquestração
   variada; cada faixa emenda em loop (descontinuidade ≤ 0,005) e o volume entre
   elas está nivelado.

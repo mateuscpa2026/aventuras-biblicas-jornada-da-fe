@@ -120,20 +120,11 @@ func _build_mount() -> void:
 	_mount_marker = Props.marker(self, Vector3(0, 2.05, -18), "MountMarker")
 
 func _build_characters() -> void:
-	add_npc("jesus", "Jesus", Vector3(0, 2.0, -16.5), {
-		"skin": Color("#d9a47c"), "hair": Color("#5a3b26"), "beard": Color("#5a3b26"),
-		"tunic": Color("#f2ead2"), "trim": Color("#c9a06a"), "pants": Color("#c9bda0"),
-		"shoe": Color("#7a5f42"), "scale": 1.03,
-		"gender": "male", "outfit": "robe", "hair_style": "long", "headwear": "none",
-		"sash": Color("#c9a06a"),
-	}, Vector3(0, 0, 16))
+	add_npc("jesus", StoryCast.display_name("jesus"), Vector3(0, 2.0, -16.5),
+		StoryCast.look("jesus"), Vector3(0, 0, 16))
 
-	var maria := add_npc("maria", "Maria", Vector3(4, 0, 7), {
-		"skin": Color("#d9a47c"), "hair": Color("#4a2f20"), "tunic": Color("#8f9fd4"),
-		"trim": Color("#e8d6ab"), "pants": Color("#7a6a4a"), "shoe": Color("#4d3a2a"),
-		"gender": "female", "outfit": "dress", "hair_style": "braid", "headwear": "veil",
-		"jewelry": true, "veil": Color("#8f9fd4"), "sash": Color("#e8d6ab"),
-	}, Vector3(0, 0, 16))
+	var maria := add_npc("maria", StoryCast.display_name("maria"), Vector3(4, 0, 7),
+		StoryCast.look("maria"), Vector3(0, 0, 16))
 	maria.delivery_item = "pao"
 	maria.delivery_event = "bread_delivered"
 	maria.delivery_mission = "jesus_paes"

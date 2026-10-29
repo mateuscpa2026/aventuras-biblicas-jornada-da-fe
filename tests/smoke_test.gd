@@ -15,6 +15,9 @@ func _ready() -> void:
 	_test_audio()
 	await _test_characters_and_badge()
 	await _test_player_looks()
+	await _test_story_cast()
+	await _test_intro_overlay()
+	await _test_camera_look()
 	await _test_quiz_dialog()
 	await _test_mission_chains()
 	_test_persistence()
@@ -88,6 +91,24 @@ func _test_data() -> void:
 				checks += 1
 	expect(scenes_ok, "todas as cenas de capítulo existem")
 	expect(ids == ["eden", "ark", "david", "moses", "jesus"], "ordem dos capítulos correta")
+
+	var expected_cast := {
+		"eden": ["adao", "eva"],
+		"ark": ["noe", "sem"],
+		"david": ["davi", "samuel"],
+		"moses": ["moises", "miria"],
+		"jesus": ["jesus", "maria"],
+	}
+	if typeof(chapters) == TYPE_ARRAY:
+		for chapter in chapters:
+			var world_id := str(chapter.get("id", ""))
+			var cast: Array = chapter.get("cast", [])
+			expect(cast.size() == 2, "%s destaca dois personagens principais" % world_id)
+			for member_id in cast:
+				expect(StoryCast.is_valid(str(member_id)), "%s: personagem %s registrado" % [world_id, member_id])
+			if expected_cast.has(world_id):
+				expect(cast == expected_cast[world_id], "%s: personagens bíblicos corretos" % world_id)
+		expect(StoryCast.names_of_chapter(chapters[0]) == "Adão e Eva", "nomes dos personagens são legíveis")
 
 	var stories = _json("res://data/bible_stories/stories.json")
 	expect(typeof(stories) == TYPE_ARRAY, "stories.json é uma lista")
@@ -320,6 +341,131 @@ func _test_player_looks() -> void:
 	expect(screen._previews[0]["viewport"].render_target_update_mode == SubViewport.UPDATE_DISABLED,
 		"prévias param de renderizar ao fechar")
 	screen.queue_free()
+	await get_tree().process_frame
+
+# ------------------------------------------------------------------ personagens da história
+
+func _test_story_cast() -> void:
+	print("[test] --- personagens principais ---")
+	expect(StoryCast.ids().size() == 10, "dez personagens principais registrados")
+	var names := {}
+	for member_id in StoryCast.ids():
+		var member := StoryCast.member(member_id)
+		expect(str(member.get("name", "")) != "", "%s tem nome bíblico" % member_id)
+		expect(str(member.get("role", "")) != "", "%s tem papel na história" % member_id)
+		var look: Dictionary = StoryCast.look(member_id)
+		expect(look.has("skin") and look.has("tunic") and look.has("gender"), "%s tem visual completo" % member_id)
+		var rig := StylizedRig.new()
+		rig.configure(look)
+		add_child(rig)
+		await get_tree().process_frame
+		expect(rig.built and rig.find_child("Head", true, false) != null, "%s monta o retrato 3D" % member_id)
+		rig.queue_free()
+		await get_tree().process_frame
+		names[str(member.get("name", ""))] = true
+	expect(names.size() == 10, "os dez personagens têm nomes diferentes")
+	expect(StoryCast.names_of(["adao", "eva"]) == "Adão e Eva", "dois nomes são unidos por 'e'")
+	expect(StoryCast.names_of(["adao", "eva", "noe"]) == "Adão, Eva e Noé", "três nomes usam vírgula e 'e'")
+	expect(StoryCast.names_of([]) == "", "lista vazia não gera texto")
+	expect(not StoryCast.is_valid("ninguem"), "personagem desconhecido é recusado")
+
+func _cast_labels(overlay: IntroOverlay) -> Array:
+	var texts := []
+	for card in overlay._cast_box.get_children():
+		for node in card.find_children("*", "Label", true, false):
+			if node is Label:
+				texts.append(node.text)
+	return texts
+
+func _test_intro_overlay() -> void:
+	print("[test] --- abertura com personagens ---")
+	var overlay := IntroOverlay.new()
+	add_child(overlay)
+	await get_tree().process_frame
+	overlay.show_chapter(Game.get_chapter("eden"))
+	await get_tree().process_frame
+	expect(overlay.visible, "abertura do capítulo aparece")
+	expect(overlay._cast_box.get_child_count() == 2, "abertura mostra dois retratos")
+	expect(overlay._cast_previews.size() == 2, "retratos têm prévias 3D próprias")
+	var always := true
+	for entry in overlay._cast_previews:
+		if entry["viewport"].render_target_update_mode != SubViewport.UPDATE_ALWAYS:
+			always = false
+		expect(entry["rig"].built, "retrato 3D do personagem é montado")
+	expect(always, "retratos renderizam ao abrir")
+	var texts := _cast_labels(overlay)
+	expect(texts.has("Adão") and texts.has("Eva"), "nomes dos personagens aparecem")
+	expect(overlay._card.get_combined_minimum_size().y <= 700.0,
+		"cartão cabe na tela de 720p (%.0f px)" % overlay._card.get_combined_minimum_size().y)
+
+	overlay.show_chapter(Game.get_chapter("david"))
+	await get_tree().process_frame
+	texts = _cast_labels(overlay)
+	expect(texts.has("Davi") and texts.has("Samuel"), "trocar de capítulo troca os personagens")
+	expect(overlay._cast_box.get_child_count() == 2, "retratos antigos são substituídos")
+	overlay.skip()
+	expect(not overlay.visible, "abertura fecha ao começar")
+	var disabled := true
+	for entry in overlay._cast_previews:
+		if entry["viewport"].render_target_update_mode != SubViewport.UPDATE_DISABLED:
+			disabled = false
+	expect(disabled, "retratos param de renderizar ao fechar")
+	overlay.queue_free()
+	await get_tree().process_frame
+
+# ------------------------------------------------------------------ câmera
+
+func _push_mouse_motion(relative: Vector2) -> void:
+	var event := InputEventMouseMotion.new()
+	event.relative = relative
+	Input.parse_input_event(event)
+	Input.flush_buffered_events()
+
+func _push_wheel(button: MouseButton) -> void:
+	var event := InputEventMouseButton.new()
+	event.button_index = button
+	event.pressed = true
+	Input.parse_input_event(event)
+	Input.flush_buffered_events()
+
+func _test_camera_look() -> void:
+	print("[test] --- câmera com mouse ---")
+	var camera := PlayerCamera.new()
+	add_child(camera)
+	await get_tree().process_frame
+	expect(camera.camera != null and camera.camera.current, "câmera de terceira pessoa fica ativa")
+
+	var start_yaw := camera.target_yaw
+	var start_pitch := camera.target_pitch
+	_push_mouse_motion(Vector2(160, 0))
+	await get_tree().process_frame
+	expect(not is_equal_approx(camera.target_yaw, start_yaw), "mouse na horizontal gira a câmera")
+	expect(camera.target_yaw < start_yaw, "arrastar para a direita gira para a direita")
+	expect(is_equal_approx(camera.target_pitch, start_pitch), "girar na horizontal não inclina a câmera")
+
+	_push_mouse_motion(Vector2(0, 90))
+	await get_tree().process_frame
+	expect(camera.target_pitch < start_pitch, "mouse para baixo inclina a câmera")
+
+	_push_mouse_motion(Vector2(0, 4000))
+	await get_tree().process_frame
+	expect(is_equal_approx(camera.target_pitch, deg_to_rad(-58.0)), "inclinação para baixo respeita o limite")
+	_push_mouse_motion(Vector2(0, -8000))
+	await get_tree().process_frame
+	expect(is_equal_approx(camera.target_pitch, deg_to_rad(26.0)), "inclinação para cima respeita o limite")
+
+	var yaw_before_pause := camera.target_yaw
+	camera.set_enabled(false)
+	_push_mouse_motion(Vector2(200, 0))
+	await get_tree().process_frame
+	expect(is_equal_approx(camera.target_yaw, yaw_before_pause), "controles desligados não giram a câmera")
+	camera.set_enabled(true)
+
+	var length_before := camera.target_length
+	_push_wheel(MOUSE_BUTTON_WHEEL_UP)
+	await get_tree().process_frame
+	expect(camera.target_length < length_before, "roda do mouse aproxima a câmera")
+	camera.queue_free()
 	await get_tree().process_frame
 
 # ------------------------------------------------------------------ quiz

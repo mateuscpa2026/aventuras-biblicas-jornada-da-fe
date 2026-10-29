@@ -11,14 +11,15 @@
 				{"speaker": "Davi", "text": "O Senhor é como um pastor que guia e protege. Eu confio nele todos os dias.", "kind": "paráfrase", "reference": "Salmo 23:1-4"}
 			]
 		},
-		"eli": {
-			"name": "Eli",
-			"role": "Pastor amigo",
+		"samuel": {
+			"name": "Samuel",
+			"role": "Profeta que ungiu Davi",
 			"lines": [
-				{"speaker": "Eli", "text": "As ovelhas seguem quem fala com carinho. Chegue perto e aperte E para chamá-las.", "kind": "fala"},
-				{"speaker": "Eli", "text": "Leve cada ovelha até o curral de madeira. Elas ficarão seguras ali.", "kind": "fala"},
-				{"speaker": "Eli", "text": "Na barraca da funda, mire com o mouse e clique para lançar a pedrinha nos alvos.", "kind": "fala"},
-				{"speaker": "Eli", "text": "Os alvos são grandes argolas. Não há violência: é só um treino de precisão e confiança.", "kind": "explicação"}
+				{"speaker": "Samuel", "text": "As ovelhas seguem quem fala com carinho. Chegue perto e aperte E para chamá-las.", "kind": "fala"},
+				{"speaker": "Samuel", "text": "Deus não escolhe como as pessoas escolhem: ele olha para o coração. Foi assim que Davi, o filho mais novo de Jessé, foi escolhido.", "kind": "paráfrase", "reference": "1 Samuel 16:7"},
+				{"speaker": "Samuel", "text": "Leve cada ovelha até o curral de madeira. Elas ficarão seguras ali.", "kind": "fala"},
+				{"speaker": "Samuel", "text": "Na barraca da funda, mire com o mouse e clique para lançar a pedrinha nos alvos.", "kind": "fala"},
+				{"speaker": "Samuel", "text": "Os alvos são grandes argolas. Não há violência: é só um treino de precisão e confiança.", "kind": "explicação"}
 			]
 		}
 	}

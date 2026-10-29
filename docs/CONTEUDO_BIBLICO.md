@@ -37,6 +37,23 @@ decisões de segurança para o público infantil.
 | Moisés e o Mar Vermelho | Êxodo 14:21-22 | paráfrase | O mar se abriu e o povo atravessou em terra seca. |
 | Ensinamentos de Jesus | Mateus 22:37-39 | paráfrase | Ame a Deus de todo o coração e ame o seu próximo como a si mesmo. |
 
+## Personagens principais por capítulo
+
+Cada capítulo destaca dois personagens bíblicos que vivem a história. Os
+retratos 3D da abertura e os NPCs do mundo usam o mesmo registro
+(`scripts/characters/story_cast.gd`).
+
+| Capítulo | Personagens | Referência |
+| --- | --- | --- |
+| Éden | Adão e Eva | Gênesis 2:21-24; 3:20 |
+| Arca de Noé | Noé e Sem | Gênesis 6:10; 9:18 |
+| Davi e Golias | Davi e Samuel | 1 Samuel 16:1-13 |
+| Moisés e o Mar Vermelho | Moisés e Miriã | Êxodo 15:20-21 |
+| Ensinamentos de Jesus | Jesus e Maria | Lucas 1:31; 2:7 |
+
+Samuel é o profeta que ungiu Davi (1 Samuel 16). O nome não se refere a Eli, o
+sacerdote dos capítulos 1–4 de 1 Samuel, que pertence a outra passagem.
+
 ## Passagens do Livro de histórias
 
 O livro reúne **56 passagens** distribuídas em **15 coleções** (3 pergaminhos por

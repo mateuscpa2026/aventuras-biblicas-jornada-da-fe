@@ -89,18 +89,10 @@ func _build_ark() -> void:
 	_supplies = Props.marker(self, Vector3(5.2, 0.1, -11.5), "Supplies")
 
 func _build_characters() -> void:
-	add_npc("noe", "Noé", Vector3(2, 0, -9), {
-		"skin": Color("#cf9c72"), "hair": Color("#e8e2d4"), "beard": Color("#e8e2d4"),
-		"tunic": Color("#8a6a45"), "trim": Color("#c9a06a"), "pants": Color("#6b5a4a"),
-		"shoe": Color("#4d3a2a"), "scale": 1.02,
-		"gender": "male", "outfit": "robe", "hair_style": "short", "headwear": "turban",
-		"veil": Color("#cbb38c"), "sash": Color("#b98a62"),
-	}, Vector3(0, 0, 15))
-	add_npc("sem", "Sem", Vector3(-3.5, 0, -3), {
-		"skin": Color("#c98d63"), "hair": Color("#3a2a1c"), "tunic": Color("#7a8f6a"),
-		"trim": Color("#c9a06a"), "pants": Color("#6b5a4a"), "shoe": Color("#4d3a2a"),
-		"gender": "male", "outfit": "tunic", "hair_style": "short", "headwear": "headband",
-	}, Vector3(0, 0, 15))
+	add_npc("noe", StoryCast.display_name("noe"), Vector3(2, 0, -9),
+		StoryCast.look("noe"), Vector3(0, 0, 15))
+	add_npc("sem", StoryCast.display_name("sem"), Vector3(-3.5, 0, -3),
+		StoryCast.look("sem"), Vector3(0, 0, 15))
 
 	var animals := [
 		["sheep", Vector3(6, 0, 1), "Leve a ovelha até a porta da arca."],

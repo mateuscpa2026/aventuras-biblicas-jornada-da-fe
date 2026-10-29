@@ -147,6 +147,8 @@ func _test_world(world_id: String) -> void:
 		expect(Dialogue.has_npc(npc.npc_id), "%s: NPC %s tem diálogo" % [world_id, npc.npc_id])
 		expect(str(npc.display_name) != "", "%s: NPC %s tem nome visível" % [world_id, npc.npc_id])
 	expect(npc_ids.size() == npcs.size(), "%s: NPCs têm identificadores únicos" % world_id)
+	for member_id in world.chapter.get("cast", []):
+		expect(npc_ids.has(str(member_id)), "%s: personagem principal %s está no mundo" % [world_id, member_id])
 
 	var talker = null
 	for npc in npcs:

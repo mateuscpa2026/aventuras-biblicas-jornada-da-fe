@@ -103,19 +103,10 @@ func _build_camp() -> void:
 	add_prop(Props.fireflies(20, Vector3(8, 2, 8)), Vector3(0, 1.0, 9))
 
 func _build_characters() -> void:
-	add_npc("moises", "Moisés", Vector3(2, 0, 5), {
-		"skin": Color("#c98d63"), "hair": Color("#e8e2d4"), "beard": Color("#e8e2d4"),
-		"tunic": Color("#b98a62"), "trim": Color("#d97b4b"), "pants": Color("#7a5f42"),
-		"shoe": Color("#4d3a2a"), "scale": 1.04,
-		"gender": "male", "outfit": "robe", "hair_style": "short", "headwear": "turban",
-		"veil": Color("#d9c9a8"), "sash": Color("#d97b4b"),
-	}, Vector3(0, 0, 17))
-	add_npc("miria", "Miriã", Vector3(-3.5, 0, 6), {
-		"skin": Color("#d9a47c"), "hair": Color("#4a2f20"), "tunic": Color("#8a9e6a"),
-		"trim": Color("#f2c14e"), "pants": Color("#7a6a4a"), "shoe": Color("#4d3a2a"),
-		"gender": "female", "outfit": "dress", "hair_style": "braid", "headwear": "headband",
-		"jewelry": true, "sash": Color("#f2c14e"), "veil": Color("#f7e0b0"),
-	}, Vector3(0, 0, 17))
+	add_npc("moises", StoryCast.display_name("moises"), Vector3(2, 0, 5),
+		StoryCast.look("moises"), Vector3(0, 0, 17))
+	add_npc("miria", StoryCast.display_name("miria"), Vector3(-3.5, 0, 6),
+		StoryCast.look("miria"), Vector3(0, 0, 17))
 
 	var travelers := [
 		["viajante_1", "Rute", Vector3(-20, 0, -4), {

@@ -147,8 +147,14 @@ func _chapter_card(chapter: Dictionary) -> Control:
 	title.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	inner.add_child(title)
 	var subtitle := UIKit.label(str(chapter.get("subtitle", "")), 13, UIKit.MUTED, 500, true)
-	subtitle.custom_minimum_size = Vector2(0, 38)
+	subtitle.custom_minimum_size = Vector2(0, 34)
 	inner.add_child(subtitle)
+	var cast_names := StoryCast.names_of_chapter(chapter)
+	if cast_names != "":
+		var cast_label := UIKit.label("Personagens · " + cast_names, 11,
+			accent.darkened(0.2) if unlocked else UIKit.MUTED, 700, true)
+		cast_label.custom_minimum_size = Vector2(0, 18)
+		inner.add_child(cast_label)
 	inner.add_child(UIKit.stretch_spacer())
 
 	var status_text := "BLOQUEADO"

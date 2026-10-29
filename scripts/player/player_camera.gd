@@ -43,7 +43,9 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if not enabled or get_tree().paused:
 		return
-	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+	# Olha mesmo se o sistema recusar a captura do cursor: o foco do jogo já
+	# é controlado por enabled, então isso é só uma rede de segurança.
+	if event is InputEventMouseMotion:
 		var sensitivity := Settings.mouse_sensitivity * 0.01
 		target_yaw -= event.relative.x * sensitivity
 		target_pitch = clampf(target_pitch - event.relative.y * sensitivity, deg_to_rad(-58.0), deg_to_rad(26.0))
