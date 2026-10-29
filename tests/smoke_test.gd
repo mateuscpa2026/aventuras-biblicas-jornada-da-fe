@@ -18,6 +18,7 @@ func _ready() -> void:
 	await _test_story_cast()
 	await _test_intro_overlay()
 	await _test_camera_look()
+	await _test_toast_layer()
 	await _test_quiz_dialog()
 	await _test_mission_chains()
 	_test_persistence()
@@ -466,6 +467,35 @@ func _test_camera_look() -> void:
 	await get_tree().process_frame
 	expect(camera.target_length < length_before, "roda do mouse aproxima a câmera")
 	camera.queue_free()
+	await get_tree().process_frame
+
+# ------------------------------------------------------------------ avisos
+
+func _test_toast_layer() -> void:
+	print("[test] --- avisos na tela ---")
+	var layer := ToastLayer.new()
+	add_child(layer)
+	await get_tree().process_frame
+	layer.push("Um")
+	layer.push("Dois")
+	layer.push("Três")
+	expect(layer._stack.get_child_count() == 3, "três avisos aparecem juntos")
+	var first := layer._stack.get_child(0) as Control
+	var tween = first.get_meta("toast_tween", null)
+	expect(tween is Tween and tween.is_valid(), "cada aviso tem animação própria")
+	layer.push("Quatro")
+	expect(layer._stack.get_child_count() == 3, "um quarto aviso substitui o mais antigo")
+	expect(not tween.is_valid(), "animação do aviso substituído é encerrada")
+	expect(first.get_parent() == null, "aviso antigo sai da lista")
+	await get_tree().process_frame
+	expect(not is_instance_valid(first), "aviso antigo é liberado sem erro")
+
+	var current := layer._stack.get_child(0)
+	layer._dismiss(current)
+	expect(current.get_parent() == null, "aviso some ao terminar")
+	await get_tree().process_frame
+	expect(not is_instance_valid(current), "aviso terminado é liberado")
+	layer.queue_free()
 	await get_tree().process_frame
 
 # ------------------------------------------------------------------ quiz

@@ -23,10 +23,7 @@ func push(text: String, icon := "✦") -> void:
 	if text.strip_edges() == "" or not is_inside_tree():
 		return
 	while _stack.get_child_count() >= MAX_TOASTS:
-		var oldest := _stack.get_child(0)
-		_stack.remove_child(oldest)
-		oldest.queue_free()
-
+		_close(_stack.get_child(0))
 	var row := UIKit.hbox(0)
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	var card := UIKit.panel(Color(0.11, 0.17, 0.13, 0.93), 18, 13, Color(0, 0, 0, 0), true)
@@ -50,7 +47,18 @@ func push(text: String, icon := "✦") -> void:
 	tween.tween_interval(2.6)
 	tween.tween_property(row, "modulate:a", 0.0, 0.32)
 	tween.tween_callback(_dismiss.bind(row))
+	row.set_meta("toast_tween", tween)
 
-func _dismiss(row: Control) -> void:
+func _close(row: Node) -> void:
+	var tween = row.get_meta("toast_tween", null)
+	if tween is Tween and tween.is_valid():
+		tween.kill()
+	if row.get_parent() == _stack:
+		_stack.remove_child(row)
+	row.queue_free()
+
+func _dismiss(row) -> void:
 	if is_instance_valid(row):
+		if row.get_parent() == _stack:
+			_stack.remove_child(row)
 		row.queue_free()

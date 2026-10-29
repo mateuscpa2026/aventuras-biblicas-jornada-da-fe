@@ -96,7 +96,7 @@ rejogados pelo menu **Capítulos**; os pergaminhos já guardados permanecem no
 ## Testes automatizados
 
 ```bash
-# 1) Sistemas, dados, missões, save, personagens, câmera e áudio (580 checagens)
+# 1) Sistemas, dados, missões, save, personagens, câmera e áudio (588 checagens)
 Godot_v4.7.2-stable_win64_console.exe --headless --path . res://tests/smoke_test.tscn
 
 # 2) Integração das cinco cenas: jogador, colisão, NPCs, animais, diálogo,
@@ -161,7 +161,7 @@ Documentação complementar:
 
 - Os cinco capítulos existem, são jogáveis e concluíveis; a progressão
   desbloqueia o capítulo seguinte e o save sobrevive a recarregar/corromper.
-- `580` checagens de sistemas + `391` checagens de cenas, **0 falhas**.
+- `588` checagens de sistemas + `391` checagens de cenas, **0 falhas**.
 - A criança escolhe entre quatro exploradores com nomes bíblicos — dois meninos
   (Josué e Daniel) e duas meninas (Ester e Sara) — com prévia 3D; a escolha é
   persistida e aplicada em todos os mundos.

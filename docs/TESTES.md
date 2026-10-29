@@ -32,7 +32,7 @@ sai com código `1` (útil para CI).
 > inclinação e o zoom. Eles exercitam os nós reais das cenas chamando os métodos
 > de interação e os sistemas de missão, diálogo, save e quiz.
 
-## `smoke_test` — sistemas e dados (580 checagens)
+## `smoke_test` — sistemas e dados (588 checagens)
 
 Cobre:
 
@@ -83,6 +83,8 @@ Cobre:
 - **Câmera com mouse**: injeta `InputEventMouseMotion` e confere que a câmera
   gira na horizontal, inclina na vertical, respeita os limites de −58°/26°,
   ignora o mouse quando os controles estão desligados e aproxima com a roda.
+- **Avisos na tela**: no máximo três toasts simultâneos, o quarto encerra a
+  animação do mais antigo, e o toast some e é liberado ao terminar.
 - **Botão flutuante**: uma interação cria o `PromptBadge`, mostra a ação pedida
   e o esconde ao sair de perto.
 
@@ -130,7 +132,7 @@ Windows 10 x64):
 
 | Suíte | Checagens | Falhas | Saída |
 | --- | ---: | ---: | --- |
-| `smoke_test.tscn` | 580 | 0 | `0` |
+| `smoke_test.tscn` | 588 | 0 | `0` |
 | `world_test.tscn` | 391 | 0 | `0` |
 
 ### Aviso esperado ao sair (headless)
