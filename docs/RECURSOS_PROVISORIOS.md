@@ -1,0 +1,90 @@
+# Recursos provisórios e como substituí-los
+
+Todos os recursos visuais e sonoros atuais são **provisórios por decisão de
+projeto**: não havia arquivos de arte/áudio externos licenciados para uso, então
+o jogo foi construído com alternativas funcionais geradas por código, sem
+depender de nada que não esteja no repositório.
+
+Nada aqui está "faltando" para o jogo rodar — são pontos de melhoria artística.
+
+## Inventário
+
+| Recurso | Situação | Onde |
+| --- | --- | --- |
+| Personagens (jogador e NPCs) | malhas primitivas montadas por código, animação procedural | `scripts/player/stylized_rig.gd`, `scripts/characters/npc.gd` |
+| Animais | malhas primitivas + animação procedural (patas, orelhas, asas, peixes) | `scripts/characters/animal_rig.gd` |
+| Cenário (árvores, rochas, tendas, mercado, arca, montanha) | geometria procedural | `scripts/worlds/props.gd`, `scripts/worlds/*.gd` |
+| Céu, luz, névoa, colinas | `WorldEnvironment` procedural | `scripts/worlds/env_builder.gd` |
+| Texturas | nenhuma textura externa; materiais com cor sólida | `assets/textures/` (vazia de propósito) |
+| Modelos 3D importados | nenhum; `assets/models/` e `assets/materials/` ficam para arte futura | — |
+| Animações importadas | nenhuma; `assets/animations/` reservado | — |
+| Música e efeitos | WAV sintetizados | `assets/audio/`, gerados por `tools/generate_audio.py` |
+| Fonte | Baloo 2 (SIL OFL 1.1) | `assets/fonts/` |
+| Ícone | SVG original | `icon.svg` |
+
+## Áudio
+
+`scripts/systems/audio_manager.gd` espera exatamente estes nomes:
+
+- Música (loop): `assets/audio/music/trilha_menu.wav`, `trilha_eden.wav`,
+  `trilha_arca.wav`, `trilha_davi.wav`, `trilha_moises.wav`,
+  `trilha_jesus.wav`.
+- Efeitos: `assets/audio/sfx/click.wav`, `collect.wav`, `success.wav`,
+  `interact.wav`, `jump.wav`, `wrong.wav`, `throw.wav`, `deliver.wav`.
+
+Regenerar os provisórios:
+
+```bash
+python tools/generate_audio.py
+```
+
+Para substituir por áudio definitivo:
+
+1. Mantenha os nomes e a pasta (ou atualize `MUSIC_BY_WORLD` e `SFX_NAMES`).
+2. Prefira **WAV** para a música em loop: o gerenciador configura
+   `loop_mode = LOOP_FORWARD` automaticamente. Com **OGG**, ative o loop nas
+   configurações de importação do arquivo no Godot.
+3. Duração sugerida da trilha: 30–90 s; os arquivos atuais têm 16 s.
+4. Níveis: pico em torno de −6 dBFS para música e −3 dBFS para efeitos; o
+   volume final é controlado por `Settings` (geral × música/efeitos).
+5. Depois de trocar arquivos, rode `Godot --headless --path . --import` e os
+   testes em `docs/TESTES.md` (eles verificam existência e carregamento dos 14
+   arquivos).
+
+## Modelos e animações
+
+O jogo não carrega arquivos de modelo — tudo é criado em tempo de execução. Para
+introduzir arte definitiva:
+
+1. Coloque os arquivos em `assets/models/` (`.glb`/`.gltf` com esqueleto e
+   animações nomeadas: `idle`, `walk`, `run`, `jump`, `interact`).
+2. Substitua a criação procedural em `stylized_rig.gd`/`animal_rig.gd` por uma
+   cena instanciada, mantendo a interface usada pelos chamadores:
+   `set_locomotion(velocidade, no_chão, velocidade_vertical)`,
+   `play_interact()`, `play_cheer(tempo)`, `set_motion(velocidade)`.
+3. O jogador usa `PlayerCharacter.rig` e a câmera é independente — nenhuma outra
+   parte depende da geometria interna do rig.
+4. Para cenário, troque chamadas de `Props.*` por cenas próprias mantendo
+   colisões (`StaticBody3D` na camada 1) e escala compatível (personagem ≈ 1,7 m).
+
+## Limitações visuais conhecidas
+
+- Formas simples e cores chapadas (sem texturas, normal maps ou sombras suaves
+  de alta qualidade) — estilo “brinquedo de madeira”, coerente, mas não fotorreal.
+- Sombras direcionais usam o renderizador **Compatibility**; em placas antigas o
+  Godot troca para ANGLE automaticamente.
+- Alguns elementos (montanha do sermão, paredes do mar) são blocos funcionais e
+  podem ganhar modelagem dedicada.
+- NPCs têm etiquetas de nome 3D; em distâncias grandes elas ficam pequenas.
+- O menu usa um diorama 3D recortado; a composição pode ser ajustada em
+  `scripts/main.gd` (`_build_menu_stage`).
+
+## Checklist antes de publicar
+
+- [ ] Substituir ou aprovar os áudios provisórios.
+- [ ] Revisar textos e referências com o responsável de conteúdo
+      (`docs/CONTEUDO_BIBLICO.md`).
+- [ ] Testar em um PC de configuração intermediária (movimento, câmera,
+      colisões, pausa, configurações, save).
+- [ ] Reexportar com os templates 4.7.2 e testar o `.exe` + `.pck`.
+- [ ] Rodar os dois conjuntos de testes headless e anexar o resultado.

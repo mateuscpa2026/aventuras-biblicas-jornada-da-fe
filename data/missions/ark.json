@@ -1,0 +1,44 @@
+[
+	{
+		"id": "ark_animais",
+		"title": "Todos a bordo",
+		"description": "Os animais precisam entrar na arca antes da chuva.",
+		"objective": "Leve 4 animais até a arca",
+		"event": "animal_delivered",
+		"target": 4,
+		"requires": [],
+		"reward": "Os animais estão seguros dentro da arca."
+	},
+	{
+		"id": "ark_provisoes",
+		"title": "Provisões para a viagem",
+		"description": "As caixas de alimento estão espalhadas pelo canteiro.",
+		"objective": "Organize 3 caixas de provisões",
+		"event": "supply_stored",
+		"target": 3,
+		"requires": [],
+		"reward": "A arca está bem abastecida."
+	},
+	{
+		"id": "ark_pergaminhos",
+		"title": "Memórias do dilúvio",
+		"description": "Pergaminhos guardam a história de Noé.",
+		"objective": "Encontre 3 pergaminhos",
+		"event": "collect_scroll",
+		"target": 3,
+		"requires": ["ark_provisoes"],
+		"reward": "A história de Noé está no seu livro."
+	},
+	{
+		"id": "ark_memoria",
+		"title": "A porta da arca",
+		"description": "Noé preparou um desafio antes de fechar a porta.",
+		"objective": "Resolva o desafio da arca",
+		"event": "quiz_complete",
+		"match": {"quiz": "ark_final"},
+		"target": 1,
+		"requires": ["ark_animais", "ark_provisoes", "ark_pergaminhos"],
+		"is_final": true,
+		"reward": "A arca está pronta e a promessa brilha no céu!"
+	}
+]

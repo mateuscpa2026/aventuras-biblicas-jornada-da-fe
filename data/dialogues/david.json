@@ -1,0 +1,25 @@
+{
+	"npcs": {
+		"davi": {
+			"name": "Davi",
+			"role": "Pastor corajoso",
+			"lines": [
+				{"speaker": "Davi", "text": "Oi! Eu cuido das ovelhas nos campos. Três delas se afastaram do curral.", "kind": "fala"},
+				{"speaker": "Davi", "text": "Eu era o mais novo da família, mas Deus escolheu o meu coração.", "kind": "paráfrase", "reference": "1 Samuel 16:11-13"},
+				{"speaker": "Davi", "text": "Coragem não é não ter medo. É confiar em Deus e fazer o que é certo.", "kind": "explicação"},
+				{"speaker": "Davi", "text": "Quando o rebanho estiver reunido, vamos treinar sua pontaria na barraca da funda.", "kind": "fala"},
+				{"speaker": "Davi", "text": "O Senhor é como um pastor que guia e protege. Eu confio nele todos os dias.", "kind": "paráfrase", "reference": "Salmo 23:1-4"}
+			]
+		},
+		"eli": {
+			"name": "Eli",
+			"role": "Pastor amigo",
+			"lines": [
+				{"speaker": "Eli", "text": "As ovelhas seguem quem fala com carinho. Chegue perto e aperte E para chamá-las.", "kind": "fala"},
+				{"speaker": "Eli", "text": "Leve cada ovelha até o curral de madeira. Elas ficarão seguras ali.", "kind": "fala"},
+				{"speaker": "Eli", "text": "Na barraca da funda, mire com o mouse e clique para lançar a pedrinha nos alvos.", "kind": "fala"},
+				{"speaker": "Eli", "text": "Os alvos são grandes argolas. Não há violência: é só um treino de precisão e confiança.", "kind": "explicação"}
+			]
+		}
+	}
+}

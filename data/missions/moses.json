@@ -1,0 +1,43 @@
+[
+	{
+		"id": "moses_povo",
+		"title": "O povo no deserto",
+		"description": "Três viajantes se perderam entre as dunas.",
+		"objective": "Leve 3 viajantes ao acampamento",
+		"event": "traveler_arrived",
+		"target": 3,
+		"requires": [],
+		"reward": "O povo está reunido no acampamento."
+	},
+	{
+		"id": "moses_braseiros",
+		"title": "Sinais de fogo",
+		"description": "Os braseiros iluminam o caminho até o mar.",
+		"objective": "Acenda os 3 braseiros na ordem certa",
+		"event": "beacon_lit",
+		"target": 3,
+		"requires": [],
+		"reward": "O caminho está iluminado."
+	},
+	{
+		"id": "moses_pergaminhos",
+		"title": "Memórias da liberdade",
+		"description": "Pergaminhos contam a história de Moisés.",
+		"objective": "Encontre 3 pergaminhos",
+		"event": "collect_scroll",
+		"target": 3,
+		"requires": ["moses_povo"],
+		"reward": "A história da liberdade está no seu livro."
+	},
+	{
+		"id": "moses_travessia",
+		"title": "A grande travessia",
+		"description": "O mar está à frente. É hora de confiar.",
+		"objective": "Atravesse o Mar Vermelho",
+		"event": "sea_crossed",
+		"target": 1,
+		"requires": ["moses_povo", "moses_braseiros", "moses_pergaminhos"],
+		"is_final": true,
+		"reward": "Você atravessou o mar em terra seca!"
+	}
+]

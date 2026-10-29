@@ -1,0 +1,45 @@
+[
+	{
+		"id": "eden_animais",
+		"title": "Amigos do jardim",
+		"description": "Adão precisa de ajuda para conhecer e cuidar dos animais.",
+		"objective": "Cuide de 5 animais",
+		"event": "care_animal",
+		"target": 5,
+		"requires": [],
+		"reward": "Os animais estão felizes com o seu carinho!"
+	},
+	{
+		"id": "eden_flores",
+		"title": "Jardim florido",
+		"description": "As mudinhas do jardim estão com sede.",
+		"objective": "Regue 3 mudinhas",
+		"event": "water_plant",
+		"target": 3,
+		"requires": [],
+		"secondary": true,
+		"reward": "O jardim ficou ainda mais colorido."
+	},
+	{
+		"id": "eden_pergaminhos",
+		"title": "Pegadas da criação",
+		"description": "Três pergaminhos contam a história da criação.",
+		"objective": "Encontre 3 pergaminhos",
+		"event": "collect_scroll",
+		"target": 3,
+		"requires": ["eden_animais"],
+		"reward": "Você guardou a história da criação no seu livro."
+	},
+	{
+		"id": "eden_memoria",
+		"title": "A pedra da memória",
+		"description": "É hora de recordar o que você aprendeu no jardim.",
+		"objective": "Complete o desafio da pedra",
+		"event": "quiz_complete",
+		"match": {"quiz": "eden_final"},
+		"target": 1,
+		"requires": ["eden_animais", "eden_pergaminhos"],
+		"is_final": true,
+		"reward": "Você concluiu o Jardim do Éden!"
+	}
+]

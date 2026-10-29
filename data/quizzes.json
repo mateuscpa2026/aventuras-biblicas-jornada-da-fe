@@ -1,0 +1,137 @@
+{
+	"eden_final": {
+		"title": "A pedra da memória",
+		"intro": "A pedra antiga brilha quando você se aproxima. Responda com calma — se errar, pode tentar de novo!",
+		"questions": [
+			{
+				"q": "Quem criou o céu, a terra e tudo o que existe?",
+				"options": ["Deus", "Noé", "Davi"],
+				"answer": 0,
+				"hint": "A história da criação começa falando dele.",
+				"reference": "Gênesis 1:1"
+			},
+			{
+				"q": "O que Deus viu depois de criar o mundo?",
+				"options": ["Que estava tudo errado", "Que era muito bom", "Que faltava luz"],
+				"answer": 1,
+				"hint": "Deus ficou feliz com a criação.",
+				"reference": "Gênesis 1:31"
+			},
+			{
+				"q": "Qual missão Deus deu às pessoas no jardim?",
+				"options": ["Construir uma arca", "Cuidar da criação", "Atravessar o mar"],
+				"answer": 1,
+				"hint": "Pense em regar plantas e cuidar dos animais.",
+				"reference": "Gênesis 2:15"
+			}
+		]
+	},
+	"ark_final": {
+		"title": "O desafio da porta",
+		"intro": "Noé sorri enquanto a porta se prepara para fechar. Vamos recordar a história?",
+		"questions": [
+			{
+				"q": "O que Deus pediu que Noé construísse?",
+				"options": ["Uma arca de madeira", "Uma torre de pedra", "Um barco pequeno"],
+				"answer": 0,
+				"hint": "Era grande o suficiente para muitos animais.",
+				"reference": "Gênesis 6:14"
+			},
+			{
+				"q": "Quem entrou na arca com Noé?",
+				"options": ["Só a família", "A família e os animais", "Ninguém"],
+				"answer": 1,
+				"hint": "Deus pediu para reunir casais de animais.",
+				"reference": "Gênesis 6:19-20"
+			},
+			{
+				"q": "Qual sinal Deus colocou no céu como promessa?",
+				"options": ["Uma estrela", "O arco-íris", "Uma nuvem"],
+				"answer": 1,
+				"hint": "Ele aparece depois da chuva, cheio de cores.",
+				"reference": "Gênesis 9:13"
+			}
+		]
+	},
+	"david_final": {
+		"title": "A pedra da coragem",
+		"intro": "A funda está pronta. Antes do último arremesso, lembre-se do que aprendeu.",
+		"questions": [
+			{
+				"q": "O que Davi cuidava antes de enfrentar o gigante?",
+				"options": ["Ovelhas", "Cavalos", "Peixes"],
+				"answer": 0,
+				"hint": "Ele era pastor.",
+				"reference": "1 Samuel 16:11"
+			},
+			{
+				"q": "Em quem Davi confiou ao enfrentar o gigante?",
+				"options": ["Na sua armadura", "Em Deus", "Na sua força"],
+				"answer": 1,
+				"hint": "Ele disse que ia em nome do Senhor.",
+				"reference": "1 Samuel 17:45"
+			},
+			{
+				"q": "O que é coragem?",
+				"options": ["Nunca sentir medo", "Fazer o certo mesmo com medo", "Ser o mais forte"],
+				"answer": 1,
+				"hint": "Davi era pequeno, mas confiou.",
+				"reference": "Salmo 23:4"
+			}
+		]
+	},
+	"moses_final": {
+		"title": "A pedra da travessia",
+		"intro": "O vento sopra e o mar se agita. Recorde a história antes de caminhar.",
+		"questions": [
+			{
+				"q": "Quem chamou Moisés para libertar o povo?",
+				"options": ["Deus, na sarça ardente", "Um rei", "Um pastor"],
+				"answer": 0,
+				"hint": "A sarça queimava sem se consumir.",
+				"reference": "Êxodo 3:2-4"
+			},
+			{
+				"q": "O que aconteceu quando Moisés estendeu a mão sobre o mar?",
+				"options": ["O mar secou de vez", "O mar se abriu e o povo passou", "Começou a chover"],
+				"answer": 1,
+				"hint": "O povo atravessou em terra seca.",
+				"reference": "Êxodo 14:21-22"
+			},
+			{
+				"q": "O que o povo fez depois de atravessar?",
+				"options": ["Cantou agradecendo", "Voltou correndo", "Ficou em silêncio"],
+				"answer": 0,
+				"hint": "Miriã liderou a celebração.",
+				"reference": "Êxodo 15:1"
+			}
+		]
+	},
+	"jesus_final": {
+		"title": "A pedra do amor",
+		"intro": "No alto do monte, Jesus espera. Vamos lembrar juntos o que ele ensinou?",
+		"questions": [
+			{
+				"q": "Quem é o nosso próximo?",
+				"options": ["Só os amigos", "Qualquer pessoa que precisa de ajuda", "Só a família"],
+				"answer": 1,
+				"hint": "A história do bom samaritano ajuda a responder.",
+				"reference": "Lucas 10:36-37"
+			},
+			{
+				"q": "O que o pai fez quando o filho voltou para casa?",
+				"options": ["Correu e o abraçou", "Fechou a porta", "Pediu dinheiro"],
+				"answer": 0,
+				"hint": "Foi uma festa de perdão.",
+				"reference": "Lucas 15:20"
+			},
+			{
+				"q": "O que Jesus disse ser o mais importante?",
+				"options": ["Ter muitos bens", "Amar a Deus e ao próximo", "Ser o primeiro"],
+				"answer": 1,
+				"hint": "Amor resume os mandamentos.",
+				"reference": "Mateus 22:37-39"
+			}
+		]
+	}
+}

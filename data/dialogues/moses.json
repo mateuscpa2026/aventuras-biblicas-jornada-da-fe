@@ -1,0 +1,49 @@
+{
+	"npcs": {
+		"moises": {
+			"name": "Moisés",
+			"role": "Líder do povo",
+			"lines": [
+				{"speaker": "Moisés", "text": "Bem-vindo ao acampamento! O povo está cansado, mas cheio de esperança.", "kind": "fala"},
+				{"speaker": "Moisés", "text": "Deus me chamou para libertar o povo e prometeu estar comigo em todos os momentos.", "kind": "paráfrase", "reference": "Êxodo 3:1-12"},
+				{"speaker": "Moisés", "text": "Três viajantes se perderam nas dunas. Converse com eles e os guie até o acampamento.", "kind": "fala"},
+				{"speaker": "Moisés", "text": "Miriã conhece a ordem dos braseiros. Fale com ela antes de acender o fogo.", "kind": "fala"},
+				{"speaker": "Moisés", "text": "Quando tudo estiver pronto, o mar vai se abrir. Caminhe sem medo.", "kind": "fala"}
+			]
+		},
+		"miria": {
+			"name": "Miriã",
+			"role": "Irmã de Moisés",
+			"lines": [
+				{"speaker": "Miriã", "text": "Que alegria ver você! O povo precisa de ajuda para chegar ao mar.", "kind": "fala"},
+				{"speaker": "Miriã", "text": "Acenda os braseiros nesta ordem: primeiro o Braseiro do Sol, depois o da Lua e por último o da Estrela.", "kind": "fala"},
+				{"speaker": "Miriã", "text": "Se errar a ordem, não se preocupe: o fogo se apaga e você pode tentar de novo.", "kind": "explicação"},
+				{"speaker": "Miriã", "text": "Depois que os três braseiros brilharem, o caminho até o mar estará iluminado.", "kind": "fala"}
+			]
+		},
+		"viajante_1": {
+			"name": "Rute",
+			"role": "Viajante",
+			"lines": [
+				{"speaker": "Rute", "text": "As dunas são todas iguais... fico feliz em ver você!", "kind": "fala"},
+				{"speaker": "Rute", "text": "Vou seguir você até o acampamento. Vamos juntos!", "kind": "fala"}
+			]
+		},
+		"viajante_2": {
+			"name": "Aarão",
+			"role": "Viajante",
+			"lines": [
+				{"speaker": "Aarão", "text": "Perdi o caminho quando o vento cobriu as pegadas.", "kind": "fala"},
+				{"speaker": "Aarão", "text": "Me guie até o acampamento, por favor. O povo está esperando.", "kind": "fala"}
+			]
+		},
+		"viajante_3": {
+			"name": "Miri",
+			"role": "Viajante",
+			"lines": [
+				{"speaker": "Miri", "text": "Vi uma luz no horizonte. Deve ser o acampamento!", "kind": "fala"},
+				{"speaker": "Miri", "text": "Vamos juntos? Seguirei você.", "kind": "fala"}
+			]
+		}
+	}
+}

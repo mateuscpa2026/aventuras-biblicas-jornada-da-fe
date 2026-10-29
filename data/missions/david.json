@@ -1,0 +1,52 @@
+[
+	{
+		"id": "david_ovelhas",
+		"title": "O rebanho perdido",
+		"description": "Três ovelhas se afastaram do curral.",
+		"objective": "Leve 3 ovelhas ao curral",
+		"event": "sheep_penned",
+		"target": 3,
+		"requires": [],
+		"reward": "O rebanho está reunido e seguro."
+	},
+	{
+		"id": "david_pergaminhos",
+		"title": "Histórias do pastor",
+		"description": "Pergaminhos contam sobre o jovem Davi.",
+		"objective": "Encontre 3 pergaminhos",
+		"event": "collect_scroll",
+		"target": 3,
+		"requires": [
+			"david_ovelhas"
+		],
+		"reward": "As histórias de Davi estão no seu livro."
+	},
+	{
+		"id": "david_conversa",
+		"title": "Uma conversa com Davi",
+		"description": "Davi quer contar como encontra coragem.",
+		"objective": "Converse com Davi",
+		"event": "talk",
+		"match": {
+			"npc": "davi"
+		},
+		"target": 1,
+		"requires": [],
+		"reward": "Davi compartilhou o segredo da sua coragem."
+	},
+	{
+		"id": "david_alvos",
+		"title": "Ponta de mira",
+		"description": "Treine a confiança e a pontaria no campo de desafios.",
+		"objective": "Acerte 3 alvos com a funda",
+		"event": "target_hit",
+		"target": 3,
+		"requires": [
+			"david_ovelhas",
+			"david_conversa",
+			"david_pergaminhos"
+		],
+		"is_final": true,
+		"reward": "Você venceu o desafio com coragem e precisão!"
+	}
+]

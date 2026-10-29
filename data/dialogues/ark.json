@@ -1,0 +1,24 @@
+{
+	"npcs": {
+		"noe": {
+			"name": "Noé",
+			"role": "Construtor da arca",
+			"lines": [
+				{"speaker": "Noé", "text": "Você chegou na hora certa! A arca precisa ficar pronta antes da chuva.", "kind": "fala"},
+				{"speaker": "Noé", "text": "Deus pediu que eu construísse a arca e reunisse os animais. Eu confiei e comecei a trabalhar.", "kind": "paráfrase", "reference": "Gênesis 6:13-22"},
+				{"speaker": "Noé", "text": "Chegue perto de um animal e aperte E para chamá-lo. Ele vai seguir você até a porta da arca.", "kind": "fala"},
+				{"speaker": "Noé", "text": "As caixas de provisões também precisam ser organizadas. Aperte E nas caixas maiores.", "kind": "fala"},
+				{"speaker": "Noé", "text": "Mesmo quando a tarefa parece grande, podemos dar um passo de cada vez.", "kind": "explicação"}
+			]
+		},
+		"sem": {
+			"name": "Sem",
+			"role": "Filho de Noé",
+			"lines": [
+				{"speaker": "Sem", "text": "Ajudei a juntar madeira para a arca. Ela ficou enorme!", "kind": "fala"},
+				{"speaker": "Sem", "text": "Quando os animais e as provisões estiverem dentro, Noé vai abrir o desafio da porta.", "kind": "fala"},
+				{"speaker": "Sem", "text": "Deus prometeu cuidar da nossa família. O arco-íris vai lembrar essa promessa para sempre.", "kind": "paráfrase", "reference": "Gênesis 9:13"}
+			]
+		}
+	}
+}

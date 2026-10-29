@@ -1,0 +1,63 @@
+[
+	{
+		"id": "jesus_paes",
+		"title": "Pão para todos",
+		"description": "Uma família da vila está com fome.",
+		"objective": "Leve 3 pães para Maria",
+		"event": "bread_delivered",
+		"target": 3,
+		"requires": [],
+		"reward": "A família agradeceu com um sorriso."
+	},
+	{
+		"id": "jesus_ovelha",
+		"title": "A ovelha perdida",
+		"description": "O pastor perdeu uma ovelha perto do monte.",
+		"objective": "Encontre a ovelha e leve-a ao pastor",
+		"event": "sheep_returned",
+		"target": 1,
+		"requires": [],
+		"reward": "O pastor encontrou sua ovelha e comemorou."
+	},
+	{
+		"id": "jesus_perdao",
+		"title": "Perdoar é amar",
+		"description": "Um morador precisa de ajuda para perdoar um amigo.",
+		"objective": "Ajude a escolher o perdão",
+		"event": "choice",
+		"match": {
+			"tag": "perdoar"
+		},
+		"target": 1,
+		"requires": [],
+		"reward": "Você escolheu o caminho da bondade."
+	},
+	{
+		"id": "jesus_pergaminhos",
+		"title": "Palavras de amor",
+		"description": "Pergaminhos guardam as parábolas de Jesus.",
+		"objective": "Encontre 3 pergaminhos",
+		"event": "collect_scroll",
+		"target": 3,
+		"requires": [
+			"jesus_paes"
+		],
+		"reward": "As parábolas estão no seu livro."
+	},
+	{
+		"id": "jesus_monte",
+		"title": "O sermão do monte",
+		"description": "Os moradores foram convidados para ouvir Jesus.",
+		"objective": "Leve 3 moradores ao monte",
+		"event": "villager_arrived",
+		"target": 3,
+		"requires": [
+			"jesus_paes",
+			"jesus_ovelha",
+			"jesus_perdao",
+			"jesus_pergaminhos"
+		],
+		"is_final": true,
+		"reward": "A vila inteira aprendeu a amar."
+	}
+]

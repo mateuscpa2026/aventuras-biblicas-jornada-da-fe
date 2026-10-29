@@ -1,0 +1,52 @@
+{
+	"npcs": {
+		"jesus": {
+			"name": "Jesus",
+			"role": "Mestre no monte",
+			"lines": [
+				{"speaker": "Jesus", "text": "Que bom ter você aqui. A vila aprendeu muito com a sua bondade.", "kind": "fala"},
+				{"speaker": "Jesus", "text": "Ame a Deus de todo o coração e ame o seu próximo como a si mesmo.", "kind": "paráfrase", "reference": "Mateus 22:37-39"},
+				{"speaker": "Jesus", "text": "Quando estiver pronto, convide os moradores para subir ao monte. Há lugar para todos.", "kind": "fala"},
+				{"speaker": "Jesus", "text": "Pequenos gestos de amor podem mudar o dia de alguém — e o mundo inteiro.", "kind": "explicação"}
+			]
+		},
+		"samaritano": {
+			"name": "Samuel",
+			"role": "Morador da vila",
+			"lines": [
+				{"speaker": "Samuel", "text": "Eu estava doente na estrada e um desconhecido cuidou de mim. Nunca vou esquecer!", "kind": "fala"},
+				{"speaker": "Samuel", "text": "Jesus contou essa história para ensinar que o próximo é qualquer pessoa que precisa de ajuda.", "kind": "paráfrase", "reference": "Lucas 10:25-37"},
+				{"speaker": "Samuel", "text": "Se quiser, posso subir ao monte com você mais tarde.", "kind": "fala"}
+			]
+		},
+		"pastor": {
+			"name": "Joel",
+			"role": "Pastor da vila",
+			"lines": [
+				{"speaker": "Joel", "text": "Minha ovelha fugiu perto do monte. Você pode me ajudar a encontrá-la?", "kind": "fala"},
+				{"speaker": "Joel", "text": "Jesus contou que um pastor deixa as noventa e nove e procura a ovelha perdida.", "kind": "paráfrase", "reference": "Lucas 15:3-7"},
+				{"speaker": "Joel", "text": "Leve a ovelha até mim e faremos uma pequena festa!", "kind": "fala"}
+			]
+		},
+		"amigo": {
+			"name": "Mateus",
+			"role": "Morador da vila",
+			"lines": [
+				{"speaker": "Mateus", "text": "Meu amigo e eu brigamos por causa de um cesto. Estou triste com isso.", "kind": "fala"},
+				{"speaker": "Mateus", "text": "O que você acha que eu devo fazer?", "kind": "fala", "choices": [
+					{"text": "Perdoar e conversar com carinho", "reply": "Você tem razão! O perdão abre espaço para a amizade.", "event": "perdoar"},
+					{"text": "Ficar bravo para sempre", "reply": "Ficar bravo é normal, mas o perdão traz paz. Podemos tentar de novo.", "event": ""}
+				]},
+				{"speaker": "Mateus", "text": "Obrigado pelo conselho! Vou procurar meu amigo.", "kind": "fala"}
+			]
+		},
+		"maria": {
+			"name": "Maria",
+			"role": "Mãe da vila",
+			"lines": [
+				{"speaker": "Maria", "text": "Que cheirinho bom vem do mercado! Minha família está com fome.", "kind": "fala"},
+				{"speaker": "Maria", "text": "Traga três pães do mercado e entregue aqui. Aperte E novamente para cada pão.", "kind": "fala"}
+			]
+		}
+	}
+}

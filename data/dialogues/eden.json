@@ -1,0 +1,24 @@
+{
+	"npcs": {
+		"adao": {
+			"name": "Adão",
+			"role": "Jardineiro do Éden",
+			"lines": [
+				{"speaker": "Adão", "text": "Que bom ter você aqui, explorador! Este jardim foi criado com muito carinho.", "kind": "fala"},
+				{"speaker": "Adão", "text": "Deus plantou um jardim e confiou a nós o cuidado dele e de todos os animais.", "kind": "paráfrase", "reference": "Gênesis 2:8-15"},
+				{"speaker": "Adão", "text": "Chegue perto de um animal e aperte E para cuidar dele. Cinco amigos estão esperando!", "kind": "fala"},
+				{"speaker": "Adão", "text": "Cuidar da criação é uma forma de agradecer por tudo o que recebemos.", "kind": "explicação"}
+			]
+		},
+		"eva": {
+			"name": "Eva",
+			"role": "Cuidadora do jardim",
+			"lines": [
+				{"speaker": "Eva", "text": "Olá! Você já viu as flores perto do rio? Elas adoram um pouco de água.", "kind": "fala"},
+				{"speaker": "Eva", "text": "Três pergaminhos estão escondidos pelo jardim. Eles guardam a história da criação.", "kind": "fala"},
+				{"speaker": "Eva", "text": "Deus criou cada animal e cada planta com um propósito. Todos são especiais.", "kind": "explicação"},
+				{"speaker": "Eva", "text": "Quando reunir os pergaminhos, procure a pedra antiga perto da cachoeira. Ela guarda um desafio.", "kind": "fala"}
+			]
+		}
+	}
+}

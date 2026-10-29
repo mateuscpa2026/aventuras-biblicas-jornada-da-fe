@@ -1,0 +1,12 @@
+# Cache do Godot
+.godot/
+
+# Builds, capturas e logs locais (o instalador fica nas Releases)
+build/
+tmp/
+*.log
+
+# Sistema
+Thumbs.db
+desktop.ini
+.DS_Store
