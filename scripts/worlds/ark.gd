@@ -60,6 +60,9 @@ func _build_scenery() -> void:
 	for position in bush_spots:
 		add_prop(Props.bush(randf_range(0.8, 1.1), Color("#4c7f50")), position)
 
+	EnvBuilder.forest(self, 32, 33.0, 45.0, Color("#5c8f57"), "mixed")
+	EnvBuilder.meadow(self, Color("#8fae7f"), 44, 27.0)
+
 	for i in 12:
 		add_prop(Props.grass_tuft(randf_range(0.9, 1.3), Color("#7d9d5f")),
 			Vector3(randf_range(-24, 24), 0, randf_range(-16, 20)))

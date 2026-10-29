@@ -17,8 +17,12 @@ Noé e Sem, Davi e Samuel, Moisés e Miriã, Jesus e Maria — em retratos 3D na
 abertura e nos cartões do mapa. Eles são os mesmos NPCs com quem a criança
 conversa no mundo.
 Os animais (ovelha, cabra, burro, cervo, coelho, pássaro e peixe) também são
-modelados por código, com lã em camadas, focinho, olhos com brilho e pálpebras,
-patas articuladas, cauda e animações de respiração, pastar e comemorar. Ao
+modelados por código, com lã em camadas, focinho e narinas próprios de cada
+espécie, olhos com esclera, íris, pupila e brilho, pálpebras, patas articuladas,
+cauda e animações de respiração, pastar e comemorar. Cada mundo tem um cinturão
+de mata no perímetro (árvores, pinheiros, palmeiras e arbustos com tons
+variados), manchas de vegetação rasteira e chão com textura e relevo suave, o
+que fecha o horizonte e dá profundidade à paisagem. Ao
 chegar perto de alguém ou de um objeto, a ação aparece em um **botão flutuante
 com a tecla E** acima do personagem. A trilha sonora tem seis temas originais e
 sintetizados, cada um com 48 compassos em cinco seções (introdução, tema,

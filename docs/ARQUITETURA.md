@@ -43,9 +43,11 @@ opcional (`Game.main`) para pedir trocas de tela.
 
 Cada mundo (`eden.gd`, `ark.gd`, `david.gd`, `moses.gd`, `jesus.gd`) divide a
 construção em métodos pequenos: ambiente, cenário, construções, personagens,
-atividades. `env_builder.gd` centraliza céu, luz, névoa, chão, colinas, nuvens e
-limites; `props.gd` fornece todas as peças procedurais (árvores, rochas, tendas,
-mercado, arca, animais, partículas).
+atividades. `env_builder.gd` centraliza céu, luz, névoa, chão, colinas, nuvens,
+limites, o cinturão de mata do perímetro (`forest`, com variação de tom por
+árvore e clareira opcional, usada no caminho do mar de Moisés) e as manchas de
+vegetação rasteira (`meadow`); `props.gd` fornece todas as peças procedurais
+(árvores, rochas, tendas, mercado, arca, animais, partículas).
 
 ### Interações
 
@@ -210,9 +212,10 @@ renderizam (`UPDATE_ALWAYS`) enquanto a abertura está visível e voltam a
 cabra (chifres em três segmentos), burro (crina e orelhas longas), cervo
 (galhada ramificada e focinho alongado), coelho (patas traseiras e orelhas
 rosadas), pássaro (asas dobradas com penas) e peixe (brânquias, boca e cauda).
-Cada rig tem olhos com brilho e piscadas, orelhas que se mexem, patas em pivôs
-articulados, respiração, balanço de cauda e comemoração; todos olham para −Z,
-igual aos NPCs.
+Cada rig tem olhos com esclera, íris, anel limbal, pupila, brilho e pálpebras,
+focinho com nariz, narinas, filtro e boca próprios de cada espécie, orelhas que
+se mexem, patas em pivôs articulados, respiração, balanço de cauda e
+comemoração; todos olham para −Z, igual aos NPCs.
 
 ## Interface
 

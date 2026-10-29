@@ -81,6 +81,10 @@ func _build_scenery() -> void:
 			continue
 		add_prop(Props.bush(randf_range(0.6, 0.85), Color("#8f9a56")), position)
 
+	# oásis de palmeiras no perímetro, deixando livre o caminho para o mar
+	EnvBuilder.forest(self, 30, 34.0, 47.0, Color("#8f9a56"), "desert", 270.0, 27.0)
+	EnvBuilder.meadow(self, Color("#c9a86a"), 40, 28.0)
+
 	# Caminho de pedras do acampamento em direção ao mar.
 	for i in 10:
 		Props.part(self, Props.box_mesh(Vector3(1.6, 0.06, 0.9)), Props.mat(Color("#c9ac7c"), 1.0),

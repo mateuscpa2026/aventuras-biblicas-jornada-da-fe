@@ -55,6 +55,9 @@ func _build_scenery() -> void:
 	]:
 		add_prop(Props.bush(randf_range(0.7, 1.0), Color("#5d8f52")), position)
 
+	EnvBuilder.forest(self, 32, 33.0, 45.0, Color("#6a9c55"), "mixed")
+	EnvBuilder.meadow(self, Color("#8fbd7d"), 44, 27.0)
+
 	var flower_colors := [Color("#e8846b"), Color("#f2b544"), Color("#d98fb8")]
 	for i in 12:
 		add_prop(Props.flower_patch(flower_colors[i % flower_colors.size()], 1.0),

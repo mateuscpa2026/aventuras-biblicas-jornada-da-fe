@@ -169,6 +169,16 @@ Ao rodar o **executável exportado**, o diretório de trabalho é a pasta do `.e
 então a pasta de captura é criada ao lado dele (por exemplo,
 `build/windows/tmp/...`), e não dentro do projeto.
 
+### Desempenho medido nesta máquina
+
+Com a janela cheia em 1366×768 (AMD Radeon R5 340, renderer GL Compatibility via
+ANGLE), as cinco cenas ficaram entre **39 e 43 FPS de média**, sem queda abaixo
+de 38 FPS durante 2,4 s de amostragem por mundo. Os números foram levantados por
+um sondador temporário (`tmp/probe/fps_probe`) que carrega cada mundo, fecha a
+introdução e lê `Performance.TIME_FPS`, `RENDER_TOTAL_DRAW_CALLS_IN_FRAME` e
+`RENDER_TOTAL_PRIMITIVES_IN_FRAME`; a sonda não faz parte da entrega.
+
+
 ## Verificação manual pendente
 
 O que os testes automatizados **não** cobrem e precisa de uma pessoa em cada PC

@@ -65,7 +65,7 @@ static func setup(root: Node3D, cfg: Dictionary) -> Dictionary:
 static func ground(root: Node3D, color: Color, size := 150.0) -> void:
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(size, size)
-	var material := Props.mat(color, 1.0)
+	var material := Props.ground_mat(color)
 	plane.material = material
 	var mesh := MeshInstance3D.new()
 	mesh.name = "Ground"
@@ -120,3 +120,61 @@ static func inner_bounds(root: Node3D, radius := 58.0) -> void:
 		shape.rotation_degrees = Vector3(0, rad_to_deg(angle) + 90.0, 0)
 		body.add_child(shape)
 	root.add_child(body)
+
+## Cinturão de mata no perímetro do mundo: fecha o horizonte sem invadir a área jogável.
+## style: "mixed" (árvores, pinheiros e arbustos), "dry" (árvores e palmeiras) ou
+## "desert" (só palmeiras e arbustos). gap_deg abre uma clareira (ex.: caminho do mar).
+static func forest(root: Node3D, count := 30, radius_min := 34.0, radius_max := 46.0,
+		leaf_color := Color("#4f9a54"), style := "mixed", gap_deg := -1.0, gap_width := 0.0) -> void:
+	for i in count:
+		var angle := TAU * float(i) / float(count) + randf_range(-0.09, 0.09)
+		var degrees := rad_to_deg(angle)
+		if gap_deg >= 0.0 and absf(wrapf(degrees - gap_deg, -180.0, 180.0)) < gap_width:
+			continue
+		var distance := randf_range(radius_min, radius_max)
+		var tint := leaf_color.lightened(randf_range(-0.07, 0.09))
+		var piece: Node3D
+		var roll := randf()
+		match style:
+			"desert":
+				piece = Props.palm(randf_range(0.85, 1.15))
+			"dry":
+				if roll < 0.45:
+					piece = Props.palm(randf_range(0.85, 1.05))
+				else:
+					piece = Props.tree(randf_range(0.9, 1.2), tint, Color("#6b4a2e"))
+			_:
+				if roll < 0.24:
+					piece = Props.pine(randf_range(1.0, 1.3), tint.darkened(0.12))
+				elif roll < 0.34:
+					piece = Props.palm(randf_range(0.85, 1.05))
+				else:
+					piece = Props.tree(randf_range(0.95, 1.3), tint)
+		piece.position = Vector3(cos(angle) * distance, 0.0, sin(angle) * distance)
+		piece.rotation.y = randf_range(0.0, TAU)
+		root.add_child(piece)
+	for i in int(count * 0.55):
+		var angle := TAU * float(i) / float(count * 0.55) + randf_range(-0.22, 0.22)
+		var degrees := rad_to_deg(angle)
+		if gap_deg >= 0.0 and absf(wrapf(degrees - gap_deg, -180.0, 180.0)) < gap_width:
+			continue
+		var distance := randf_range(radius_min - 2.0, radius_max + 2.0)
+		var bush := Props.bush(randf_range(0.7, 1.1), leaf_color.darkened(randf_range(0.0, 0.1)))
+		bush.position = Vector3(cos(angle) * distance, 0.0, sin(angle) * distance)
+		bush.rotation.y = randf_range(0.0, TAU)
+		root.add_child(bush)
+
+## Manchas de vegetação rasteira: quebram a planície e dão escala ao chão.
+static func meadow(root: Node3D, color: Color, count := 44, radius := 26.0) -> void:
+	var sphere := Props.sphere_mesh(1.0, 10, 5)
+	var tones := [color.darkened(0.12), color.darkened(0.05), color.lightened(0.05)]
+	var batches: Array = [[], [], []]
+	for i in count:
+		var angle := randf_range(0.0, TAU)
+		var distance := sqrt(randf()) * radius
+		var spot := Vector3(cos(angle) * distance, 0.012, sin(angle) * distance)
+		var size := randf_range(0.5, 1.4)
+		batches[i % 3].append([sphere, Props.xf(spot, Vector3(0, randf_range(0.0, 360.0), 0),
+			Vector3(size, 0.04, size * randf_range(0.7, 1.15)))])
+	for i in 3:
+		Props.add_merged(root, batches[i], Props.ground_mat(tones[i]), "Meadow%d" % i)

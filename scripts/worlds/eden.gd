@@ -55,6 +55,9 @@ func _build_scenery() -> void:
 	for position in bush_spots:
 		add_prop(Props.bush(randf_range(0.75, 1.1)), position)
 
+	EnvBuilder.forest(self, 34, 33.0, 45.0, Color("#4f9a54"), "mixed")
+	EnvBuilder.meadow(self, Color("#6fae66"), 46, 27.0)
+
 	var flower_colors := [Color("#f2b544"), Color("#e8846b"), Color("#f7d35c"), Color("#d98fb8")]
 	for i in 16:
 		var position := Vector3(randf_range(-24, 24), 0, randf_range(-18, 20))
