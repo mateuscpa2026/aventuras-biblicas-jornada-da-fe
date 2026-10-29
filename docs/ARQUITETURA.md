@@ -51,7 +51,10 @@ mercado, arca, animais, partículas).
 
 Tudo que responde a `E` deriva de `Interactable`
 (`scripts/interactions/interactable.gd`): raio, prompt, `can_interact`,
-`interact`. Implementações:
+`interact`. O jogador procura o alvo mais próximo a cada 0,12 s e mostra
+`show_prompt()` nele: um `PromptBadge` (SubViewport + Sprite3D billboard com a
+pílula escura e a tecla E) flutua acima do alvo, sempre de frente para a câmera.
+Ao sair de perto, abrir diálogo/quiz ou pausar, o selo é escondido. Implementações:
 
 - `ScrollPickup` — guarda uma história e emite `collect_scroll`; fica oculto até
   a missão `required_mission` começar.
@@ -155,12 +158,32 @@ colisão (evita atravessar paredes), zoom na roda, mira com aproximação e
 sensibilidade configurável. As animações são procedurais (`StylizedRig` e
 `AnimalRig`): caminhada, corrida, salto, gesto de interação e comemoração.
 
+`StylizedRig` aceita um dicionário de aparência: `gender`, `outfit`
+(`tunic`/`robe`/`dress`), `hair_style` (`short`/`long`/`braid`/`bun`/`bald`),
+`headwear` (`none`/`headband`/`turban`/`veil`/`hood`), `jewelry` e as cores de
+pele, cabelo, tecido, barra, sandália, faixa, manto e véu. O padrão feminino é
+vestido comprido com cabelo longo e joias; o masculino é túnica com cabelo
+curto. Todas as peças (rosto, olhos, cílios, mãos, sandálias, dobras, turbante,
+barba) são nós nomeados, e a animação procedural controla pernas, braços, saia,
+tronco, cabeça e piscadas.
+
 ## Interface
 
 `scenes/ui/` — menu, seleção de capítulos, introdução, HUD (capítulo, missões,
 pergaminhos, itens carregados), diálogo, livro, quiz, pausa, configurações,
 toast, capítulo concluído. `ui_kit.gd` concentra tipografia, botões, cartões e
-espaçamentos para manter a identidade visual.
+espaçamentos para manter a identidade visual. `prompt_badge.gd` desenha o botão
+3D de interação em um SubViewport transparente, reutilizando o mesmo UIKit.
+
+## Música
+
+`tools/generate_audio.py` sintetiza as seis trilhas em Python puro (sem
+bibliotecas externas): tabelas de onda por timbre (flauta, palheta, trompa,
+cordas, dedilhado, harpa, baixo), melodia escrita por compasso, acompanhamento
+por estilo (valsa, balanço, heroico, místico, terno), percussão suave e reverb
+com cauda dobrada para o início, garantindo loop sem clique. Cada tema tem 16
+compassos (23–48 s). O `AudioManager` calcula o fim do loop em quadros a partir
+de `get_length()`, compatível com a importação QOA do Godot.
 
 ## Como estender
 

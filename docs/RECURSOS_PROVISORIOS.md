@@ -11,14 +11,14 @@ Nada aqui está "faltando" para o jogo rodar — são pontos de melhoria artíst
 
 | Recurso | Situação | Onde |
 | --- | --- | --- |
-| Personagens (jogador e NPCs) | malhas primitivas montadas por código, animação procedural | `scripts/player/stylized_rig.gd`, `scripts/characters/npc.gd` |
+| Personagens (jogador e NPCs) | malhas primitivas detalhadas (rosto, mãos, cabelo, véu, turbante, barba, joias, sandálias), roupas masculinas/femininas e animação procedural | `scripts/player/stylized_rig.gd`, `scripts/characters/npc.gd` |
 | Animais | malhas primitivas + animação procedural (patas, orelhas, asas, peixes) | `scripts/characters/animal_rig.gd` |
 | Cenário (árvores, rochas, tendas, mercado, arca, montanha) | geometria procedural | `scripts/worlds/props.gd`, `scripts/worlds/*.gd` |
 | Céu, luz, névoa, colinas | `WorldEnvironment` procedural | `scripts/worlds/env_builder.gd` |
 | Texturas | nenhuma textura externa; materiais com cor sólida | `assets/textures/` (vazia de propósito) |
 | Modelos 3D importados | nenhum; `assets/models/` e `assets/materials/` ficam para arte futura | — |
 | Animações importadas | nenhuma; `assets/animations/` reservado | — |
-| Música e efeitos | WAV sintetizados | `assets/audio/`, gerados por `tools/generate_audio.py` |
+| Música e efeitos | WAV sintetizados: 6 trilhas originais de 16 compassos com melodia, harmonia, baixo, percussão e reverb; 8 efeitos | `assets/audio/`, gerados por `tools/generate_audio.py` |
 | Fonte | Baloo 2 (SIL OFL 1.1) | `assets/fonts/` |
 | Ícone | SVG original | `icon.svg` |
 
@@ -44,7 +44,8 @@ Para substituir por áudio definitivo:
 2. Prefira **WAV** para a música em loop: o gerenciador configura
    `loop_mode = LOOP_FORWARD` automaticamente. Com **OGG**, ative o loop nas
    configurações de importação do arquivo no Godot.
-3. Duração sugerida da trilha: 30–90 s; os arquivos atuais têm 16 s.
+3. Duração sugerida da trilha: 30–90 s; os arquivos atuais têm 23–48 s e já
+   emendam em loop (a cauda de reverb é dobrada para o início).
 4. Níveis: pico em torno de −6 dBFS para música e −3 dBFS para efeitos; o
    volume final é controlado por `Settings` (geral × música/efeitos).
 5. Depois de trocar arquivos, rode `Godot --headless --path . --import` e os
@@ -75,13 +76,15 @@ introduzir arte definitiva:
   Godot troca para ANGLE automaticamente.
 - Alguns elementos (montanha do sermão, paredes do mar) são blocos funcionais e
   podem ganhar modelagem dedicada.
-- NPCs têm etiquetas de nome 3D; em distâncias grandes elas ficam pequenas.
+- NPCs têm etiquetas de nome 3D e o botão de interação em Sprite3D; em
+  distâncias grandes ambos ficam pequenos, mas voltam ao tamanho normal ao se
+  aproximar.
 - O menu usa um diorama 3D recortado; a composição pode ser ajustada em
   `scripts/main.gd` (`_build_menu_stage`).
 
 ## Checklist antes de publicar
 
-- [ ] Substituir ou aprovar os áudios provisórios.
+- [ ] Aprovar as seis trilhas sintetizadas (ou substituí-las por gravações).
 - [ ] Revisar textos e referências com o responsável de conteúdo
       (`docs/CONTEUDO_BIBLICO.md`).
 - [ ] Testar em um PC de configuração intermediária (movimento, câmera,

@@ -6,6 +6,7 @@ func _ready() -> void:
 	super()
 	prompt_text = "Treinar com a funda"
 	interact_radius = 3.2
+	prompt_height = 2.3
 	_build_visual()
 
 func _build_visual() -> void:

@@ -19,6 +19,7 @@ func _ready() -> void:
 		Missions.mission_started.connect(_on_mission_started)
 	prompt_text = "Pegar pergaminho"
 	interact_radius = 3.2
+	prompt_height = 1.5
 	_base_y = position.y
 	_visual = Props.scroll_visual()
 	add_child(_visual)

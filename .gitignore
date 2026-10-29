@@ -6,6 +6,10 @@ build/
 tmp/
 *.log
 
+# Python
+__pycache__/
+*.pyc
+
 # Sistema
 Thumbs.db
 desktop.ini

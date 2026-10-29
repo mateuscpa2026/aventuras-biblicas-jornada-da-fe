@@ -88,10 +88,14 @@ func _build_characters() -> void:
 	add_npc("adao", "Adão", Vector3(2.5, 0, 3), {
 		"skin": Color("#c98d63"), "hair": Color("#3a2a1c"), "tunic": Color("#a8b884"),
 		"trim": Color("#d9b96a"), "pants": Color("#7a6a4a"), "shoe": Color("#5a4632"),
+		"gender": "male", "outfit": "tunic", "hair_style": "short", "headwear": "headband",
+		"cloak": Color("#6f9a6a"),
 	}, Vector3(0, 0, 14))
 	add_npc("eva", "Eva", Vector3(-4.5, 0, -1), {
 		"skin": Color("#d9a47c"), "hair": Color("#4a2f20"), "tunic": Color("#c98f7a"),
 		"trim": Color("#f2c14e"), "pants": Color("#8a6a52"), "shoe": Color("#5a4632"),
+		"gender": "female", "outfit": "dress", "hair_style": "braid", "headwear": "none",
+		"jewelry": true, "sash": Color("#f2c14e"), "veil": Color("#f7e0b0"),
 	}, Vector3(0, 0, 14))
 
 	var animals := [

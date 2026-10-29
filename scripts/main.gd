@@ -150,11 +150,16 @@ func _build_menu_stage() -> void:
 		"trim": Color("#f2c14e"),
 		"pants": Color("#6b5a4a"),
 		"shoe": Color("#4d3a2a"),
+		"gender": "male",
+		"outfit": "tunic",
+		"hair_style": "short",
+		"headwear": "headband",
+		"cloak": Color("#356f63"),
+		"sash": Color("#f2c14e"),
 	})
 	hero.position = Vector3(6.0, 0, 1.8)
 	hero.rotation.y = PI
 	menu_stage.add_child(hero)
-	hero.add_hat(Color("#d98f4a"))
 
 	var sheep := AnimalRig.new()
 	sheep.setup("sheep")

@@ -5,6 +5,13 @@ jogáveis (Éden, Arca de Noé, Davi, Moisés e Ensinamentos de Jesus), missões
 diálogos, 15 pergaminhos colecionáveis e um livro com 56 passagens bíblicas,
 quebra-cabeças de memória e salvamento local.
 
+Os personagens têm rosto, cabelo, barba, turbante, véu, joias e sandálias
+modelados por código, com roupas masculinas (túnica/manto) e femininas
+(vestido comprido, trança e véu) distintas. Ao chegar perto de alguém ou de um
+objeto, a ação aparece em um **botão flutuante com a tecla E** acima do
+personagem. A trilha sonora tem seis temas originais e sintetizados, com melodia,
+acompanhamento e percussão suave.
+
 O projeto é **autossuficiente**: todos os modelos, cenários, animações, ícones e
 áudios são gerados por código ou sintetizados, sem dependência de arquivos
 externos que não estejam no repositório.
@@ -55,7 +62,7 @@ Godot_v4.7.2-stable_win64.exe --path .
 | Olhar | Mouse (a câmera é capturada ao entrar no mundo) |
 | Correr | `Shift` |
 | Pular | `Espaço` |
-| Interagir / conversar / pegar | `E` |
+| Interagir / conversar / pegar | `E` (o botão aparece acima do alvo) |
 | Mirar com a funda (Davi) | Botão direito do mouse |
 | Lançar pedrinha | Botão esquerdo (durante a mira) |
 | Afastar/aproximar câmera | Roda do mouse |
@@ -76,7 +83,7 @@ rejogados pelo menu **Capítulos**; os pergaminhos já guardados permanecem no
 ## Testes automatizados
 
 ```bash
-# 1) Sistemas, dados, missões, save e áudio (420 checagens)
+# 1) Sistemas, dados, missões, save, personagens e áudio (439 checagens)
 Godot_v4.7.2-stable_win64_console.exe --headless --path . res://tests/smoke_test.tscn
 
 # 2) Integração das cinco cenas: jogador, colisão, NPCs, diálogo,
@@ -118,7 +125,7 @@ Para um executável único, marque *Embed PCK* nas opções do preset.
 scenes/      player, worlds, characters, interactions, ui, main
 scripts/     player, worlds, characters, interactions, systems, ui
 data/        chapters.json, missions/, dialogues/, quizzes.json, bible_stories/
-assets/      fonts (Baloo 2, OFL), audio (música e efeitos provisórios)
+assets/      fonts (Baloo 2, OFL), audio (6 trilhas originais e efeitos sintetizados)
 docs/        conteúdo bíblico, arquitetura, recursos, testes
 tests/       smoke_test e world_test (headless)
 tools/       generate_audio.py (síntese dos WAVs provisórios)
@@ -139,14 +146,14 @@ Documentação complementar:
 
 - Os cinco capítulos existem, são jogáveis e concluíveis; a progressão
   desbloqueia o capítulo seguinte e o save sobrevive a recarregar/corromper.
-- `420` checagens de sistemas + `292` checagens de cenas, **0 falhas**.
+- `439` checagens de sistemas + `292` checagens de cenas, **0 falhas**.
 - Build Windows exportado e executado em modo de captura, gerando as imagens
   das cinco telas de mundo e dos menus.
 - Instalador testado: instalação silenciosa, execução do jogo em tela cheia a
   partir da pasta instalada e desinstalação sem resíduos de atalhos.
 - O que ainda depende de validação humana: sensação de movimento/câmera em cada
-  PC alvo e revisão artística/áudio final (os recursos são provisórios por
-  projeto). Ver limitações em `docs/RECURSOS_PROVISORIOS.md`.
+  PC alvo e aprovação artística/áudio final (os recursos continuam provisórios
+  por projeto). Ver limitações em `docs/RECURSOS_PROVISORIOS.md`.
 
 ## Créditos
 

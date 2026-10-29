@@ -33,6 +33,7 @@ func _ready() -> void:
 	if animal_name == "":
 		animal_name = KIND_LABELS.get(kind, "animal")
 	interact_radius = 3.1
+	prompt_height = 1.7
 	_home = global_position
 	_wander_target = _home
 	rig = AnimalRig.new()

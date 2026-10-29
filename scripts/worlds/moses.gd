@@ -107,22 +107,38 @@ func _build_characters() -> void:
 		"skin": Color("#c98d63"), "hair": Color("#e8e2d4"), "beard": Color("#e8e2d4"),
 		"tunic": Color("#b98a62"), "trim": Color("#d97b4b"), "pants": Color("#7a5f42"),
 		"shoe": Color("#4d3a2a"), "scale": 1.04,
+		"gender": "male", "outfit": "robe", "hair_style": "short", "headwear": "turban",
+		"veil": Color("#d9c9a8"), "sash": Color("#d97b4b"),
 	}, Vector3(0, 0, 17))
 	add_npc("miria", "Miriã", Vector3(-3.5, 0, 6), {
 		"skin": Color("#d9a47c"), "hair": Color("#4a2f20"), "tunic": Color("#8a9e6a"),
 		"trim": Color("#f2c14e"), "pants": Color("#7a6a4a"), "shoe": Color("#4d3a2a"),
+		"gender": "female", "outfit": "dress", "hair_style": "braid", "headwear": "headband",
+		"jewelry": true, "sash": Color("#f2c14e"), "veil": Color("#f7e0b0"),
 	}, Vector3(0, 0, 17))
 
 	var travelers := [
-		["viajante_1", "Rute", Vector3(-20, 0, -4)],
-		["viajante_2", "Aarão", Vector3(19, 0, -1)],
-		["viajante_3", "Miri", Vector3(13, 0, 13)],
+		["viajante_1", "Rute", Vector3(-20, 0, -4), {
+			"gender": "female", "outfit": "dress", "hair_style": "braid", "headwear": "veil",
+			"jewelry": true, "tunic": Color("#a8896a"), "veil": Color("#e8d6ab"),
+		}],
+		["viajante_2", "Aarão", Vector3(19, 0, -1), {
+			"gender": "male", "outfit": "robe", "hair_style": "short", "headwear": "turban",
+			"beard": Color("#5a4632"), "tunic": Color("#8a7a5a"), "veil": Color("#d9c9a8"),
+		}],
+		["viajante_3", "Miri", Vector3(13, 0, 13), {
+			"gender": "female", "outfit": "dress", "hair_style": "long", "headwear": "headband",
+			"jewelry": true, "tunic": Color("#a8a06a"),
+		}],
 	]
 	for entry in travelers:
-		var traveler := add_npc(str(entry[0]), str(entry[1]), entry[2], {
+		var look := {
 			"skin": Color("#c98d63"), "hair": Color("#4a2f20"), "tunic": Color("#a8a06a"),
 			"trim": Color("#d97b4b"), "pants": Color("#7a6a4a"), "shoe": Color("#4d3a2a"),
-		}, Vector3(0, 0, 9))
+		}
+		var extra: Dictionary = entry[3]
+		look.merge(extra, true)
+		var traveler := add_npc(str(entry[0]), str(entry[1]), entry[2], look, Vector3(0, 0, 9))
 		traveler.can_follow = true
 		traveler.follow_mission = "moses_povo"
 		traveler.escort_target = _camp

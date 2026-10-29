@@ -41,9 +41,14 @@ func _ready() -> void:
 		"trim": Color("#f2c14e"),
 		"pants": Color("#6b5a4a"),
 		"shoe": Color("#4d3a2a"),
+		"gender": "male",
+		"outfit": "tunic",
+		"hair_style": "short",
+		"headwear": "headband",
+		"cloak": Color("#356f63"),
+		"sash": Color("#f2c14e"),
 	})
 	add_child(rig)
-	rig.add_hat(Color("#d98f4a"))
 
 	camera_rig = PlayerCamera.new()
 	camera_rig.name = "CameraRig"
@@ -127,16 +132,25 @@ func _physics_process(delta: float) -> void:
 
 func _update_focus() -> void:
 	var text := ""
+	var previous := selected
+	selected = null
 	if input_enabled:
 		if aiming:
 			text = "[Clique] Lançar pedra    [E] Sair da mira"
 		else:
 			selected = _find_nearest()
 			if selected:
-				text = "[E] " + selected.get_prompt(self)
+				selected.show_prompt(selected.get_prompt(self))
+	if previous and is_instance_valid(previous) and previous != selected:
+		previous.hide_prompt()
 	if text != _last_prompt:
 		_last_prompt = text
 		prompt_changed.emit(text)
+
+func _clear_selection() -> void:
+	if selected and is_instance_valid(selected):
+		selected.hide_prompt()
+	selected = null
 
 func _find_nearest() -> Interactable:
 	var best: Interactable = null
@@ -173,7 +187,7 @@ func set_controlled(value: bool) -> void:
 	if not value:
 		velocity.x = 0.0
 		velocity.z = 0.0
-		selected = null
+		_clear_selection()
 		set_aiming(false)
 		if _last_prompt != "":
 			_last_prompt = ""
@@ -186,7 +200,7 @@ func set_aiming(value: bool) -> void:
 		return
 	aiming = value
 	camera_rig.set_aiming(value)
-	selected = null
+	_clear_selection()
 	aiming_changed.emit(value)
 	_last_prompt = ""
 	_update_focus()

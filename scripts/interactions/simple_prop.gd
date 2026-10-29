@@ -15,6 +15,7 @@ var used := false
 
 func _ready() -> void:
 	super()
+	prompt_height = 1.6
 
 func interact(_player: Node3D) -> void:
 	if used:

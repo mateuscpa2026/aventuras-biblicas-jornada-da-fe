@@ -34,6 +34,7 @@ func _ready() -> void:
 	if colors.has("beard"):
 		rig.add_beard(colors["beard"])
 	rig.scale = Vector3.ONE * float(colors.get("scale", 1.0))
+	prompt_height = 2.72 * float(colors.get("scale", 1.0))
 
 	_name_label = Label3D.new()
 	_name_label.name = "NameLabel"

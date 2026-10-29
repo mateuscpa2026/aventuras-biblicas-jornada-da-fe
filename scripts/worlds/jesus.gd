@@ -124,11 +124,15 @@ func _build_characters() -> void:
 		"skin": Color("#d9a47c"), "hair": Color("#5a3b26"), "beard": Color("#5a3b26"),
 		"tunic": Color("#f2ead2"), "trim": Color("#c9a06a"), "pants": Color("#c9bda0"),
 		"shoe": Color("#7a5f42"), "scale": 1.03,
+		"gender": "male", "outfit": "robe", "hair_style": "long", "headwear": "none",
+		"sash": Color("#c9a06a"),
 	}, Vector3(0, 0, 16))
 
 	var maria := add_npc("maria", "Maria", Vector3(4, 0, 7), {
 		"skin": Color("#d9a47c"), "hair": Color("#4a2f20"), "tunic": Color("#8f9fd4"),
 		"trim": Color("#e8d6ab"), "pants": Color("#7a6a4a"), "shoe": Color("#4d3a2a"),
+		"gender": "female", "outfit": "dress", "hair_style": "braid", "headwear": "veil",
+		"jewelry": true, "veil": Color("#8f9fd4"), "sash": Color("#e8d6ab"),
 	}, Vector3(0, 0, 16))
 	maria.delivery_item = "pao"
 	maria.delivery_event = "bread_delivered"
@@ -143,6 +147,7 @@ func _build_characters() -> void:
 	var samaritano := add_npc("samaritano", "Samuel", Vector3(-7, 0, 3), {
 		"skin": Color("#c98d63"), "hair": Color("#3a2a1c"), "tunic": Color("#a8845f"),
 		"trim": Color("#7f9fd4"), "pants": Color("#6b5a4a"), "shoe": Color("#4d3a2a"),
+		"gender": "male", "outfit": "tunic", "hair_style": "short", "headwear": "headband",
 	}, Vector3(0, 0, 16))
 	samaritano.can_follow = true
 	samaritano.follow_mission = "jesus_monte"
@@ -153,6 +158,8 @@ func _build_characters() -> void:
 	var amigo := add_npc("amigo", "Mateus", Vector3(-4, 0, 6), {
 		"skin": Color("#b98a63"), "hair": Color("#4a3020"), "tunic": Color("#b98a62"),
 		"trim": Color("#d9b96a"), "pants": Color("#6b5a4a"), "shoe": Color("#4d3a2a"),
+		"gender": "male", "outfit": "tunic", "hair_style": "short", "headwear": "none",
+		"cloak": Color("#8a6a4a"),
 	}, Vector3(0, 0, 16))
 	amigo.can_follow = true
 	amigo.follow_mission = "jesus_monte"
@@ -164,6 +171,8 @@ func _build_characters() -> void:
 		"skin": Color("#c98d63"), "hair": Color("#3a2a1c"), "beard": Color("#3a2a1c"),
 		"tunic": Color("#8a9e6a"), "trim": Color("#d9b96a"), "pants": Color("#7a5f42"),
 		"shoe": Color("#4d3a2a"),
+		"gender": "male", "outfit": "tunic", "hair_style": "short", "headwear": "headband",
+		"cloak": Color("#6f8a5a"),
 	}, Vector3(14, 0, -6))
 
 	var sheep := add_animal("sheep", Vector3(14, 0, -6))

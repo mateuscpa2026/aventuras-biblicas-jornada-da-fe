@@ -11,6 +11,7 @@ var _time := 0.0
 func _ready() -> void:
 	super()
 	interact_radius = 3.6
+	prompt_height = 2.7
 	var stone := Props.rock(1.9, Color("#8d8b83"))
 	stone.rotation_degrees.y = 20.0
 	add_child(stone)

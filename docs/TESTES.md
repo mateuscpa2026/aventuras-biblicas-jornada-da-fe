@@ -31,7 +31,7 @@ sai com código `1` (útil para CI).
 > Eles exercitam os nós reais das cenas chamando os métodos de interação e os
 > sistemas de missão, diálogo, save e quiz.
 
-## `smoke_test` — sistemas e dados (420 checagens)
+## `smoke_test` — sistemas e dados (439 checagens)
 
 Cobre:
 
@@ -59,8 +59,14 @@ Cobre:
   avançar nem encerrar, que cada acerto avança, que acertar todas conclui e
   mostra a tela final, e que fechar emite `closed(true)` e esconde a janela.
 - **Áudio**: os 8 efeitos e as 6 trilhas existem, carregam como
-  `AudioStreamWAV`, têm duração mínima esperada e a música inicia/para pelo
-  `AudioManager`.
+  `AudioStreamWAV`, têm duração mínima esperada, a música inicia/para pelo
+  `AudioManager` e o loop cobre a faixa inteira (calculado em quadros, o que
+  funciona com WAV comprimido em QOA).
+- **Personagens**: o rig masculino de túnica tem saia curta, faixa na cabeça e
+  sandálias; o feminino de vestido tem trança, véu e bracelete; o ancião com
+  turbante tem voltas de tecido e barba. Nenhum homem recebe véu.
+- **Botão flutuante**: uma interação cria o `PromptBadge`, mostra a ação pedida
+  e o esconde ao sair de perto.
 
 O teste salva uma cópia do save do jogador no início e restaura no final, então
 rodá-lo não apaga progresso real.
@@ -101,7 +107,7 @@ Windows 10 x64):
 
 | Suíte | Checagens | Falhas | Saída |
 | --- | ---: | ---: | --- |
-| `smoke_test.tscn` | 420 | 0 | `0` |
+| `smoke_test.tscn` | 439 | 0 | `0` |
 | `world_test.tscn` | 292 | 0 | `0` |
 
 ### Aviso esperado ao sair (headless)
@@ -152,9 +158,12 @@ alvo:
 4. Pausa (`Esc`), configurações (volumes, resolução, tela cheia, qualidade,
    sensibilidade) e persistência delas após reabrir o jogo.
 5. `Continuar` retomando o último mundo e capítulos concluídos sendo rejogados.
-6. Áudio audível e agradável (as trilhas/efeitos são provisórios — ver
+6. Áudio audível e agradável: conferir as seis trilhas em loop e o volume
+   relativo entre música e efeitos (os arquivos continuam sintetizados — ver
    [RECURSOS_PROVISORIOS.md](RECURSOS_PROVISORIOS.md)).
-7. Desempenho em PC intermediário (o jogo usa primitivas procedurais e não
+7. Leitura do botão flutuante sobre NPCs, animais e objetos a diferentes
+   distâncias, e das roupas masculinas/femininas em cada mundo.
+8. Desempenho em PC intermediário (o jogo usa primitivas procedurais e não
    depende de assets pesados).
 
 Itens 1–3 foram exercitados pelos testes de cena de forma programática

@@ -12,6 +12,7 @@ var _label: Label3D
 func _ready() -> void:
 	super()
 	interact_radius = 3.2
+	prompt_height = 2.5
 	prompt_text = "Acender o Braseiro do " + beacon_name
 
 	add_child(Props.brazier())

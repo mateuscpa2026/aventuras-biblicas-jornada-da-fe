@@ -64,7 +64,7 @@ func play_music(world_id: String) -> void:
 	var stream: AudioStream = load(path)
 	if stream is AudioStreamWAV:
 		stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-		stream.loop_end = stream.data.size() / 2
+		stream.loop_end = int(round(stream.get_length() * stream.mix_rate))
 	var use_fade := _music.playing
 	var next_player := AudioStreamPlayer.new()
 	next_player.name = "MusicNext"

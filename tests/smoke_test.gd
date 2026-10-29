@@ -13,6 +13,7 @@ func _ready() -> void:
 	print("[test] === Aventuras Bíblicas — teste funcional ===")
 	_test_data()
 	_test_audio()
+	await _test_characters_and_badge()
 	await _test_quiz_dialog()
 	await _test_mission_chains()
 	_test_persistence()
@@ -184,9 +185,63 @@ func _test_audio() -> void:
 	if ResourceLoader.exists("res://assets/audio/music/trilha_eden.wav"):
 		Audio.play_music("eden")
 		expect(Audio._current_music != "", "música de Éden inicia")
+		var music_stream: AudioStream = Audio._music.stream
+		if music_stream is AudioStreamWAV:
+			expect(music_stream.loop_mode == AudioStreamWAV.LOOP_FORWARD, "música em loop contínuo")
+			var frames := int(round(music_stream.get_length() * music_stream.mix_rate))
+			expect(abs(music_stream.loop_end - frames) <= 2, "loop cobre a música inteira (%d amostras)" % music_stream.loop_end)
 		Audio.play_sfx("click")
 		Audio.stop_music(false)
 		_stop_all_audio()
+
+# ------------------------------------------------------------------ personagens
+
+func _test_characters_and_badge() -> void:
+	print("[test] --- personagens e botão de interação ---")
+	var male := StylizedRig.new()
+	male.configure({"gender": "male", "outfit": "tunic", "hair_style": "short", "headwear": "headband"})
+	add_child(male)
+	await get_tree().process_frame
+	expect(male.built, "boneco masculino é construído")
+	expect(male.find_child("Skirt", true, false) != null, "túnica masculina tem saia curta")
+	expect(male.find_child("Headwear", true, false) != null, "homem com faixa na cabeça")
+	expect(male.find_child("Veil", true, false) == null, "homem sem véu")
+	expect(male.find_child("Sole", true, false) != null, "sandálias com sola")
+	male.queue_free()
+
+	var female := StylizedRig.new()
+	female.configure({"gender": "female", "outfit": "dress", "hair_style": "braid", "headwear": "veil", "jewelry": true})
+	add_child(female)
+	await get_tree().process_frame
+	expect(female.outfit == "dress", "roupa feminina é vestido comprido")
+	expect(female.find_child("Braid*", true, false) != null, "trança no cabelo feminino")
+	expect(female.find_child("Veil", true, false) != null, "véu feminino")
+	expect(female.find_child("Bracelet", true, false) != null, "bracelete feminino")
+	expect(female.find_child("Toe", true, false) != null, "dedos aparecem nas sandálias")
+	female.queue_free()
+
+	var elder := StylizedRig.new()
+	elder.configure({"gender": "male", "outfit": "robe", "headwear": "turban", "veil": Color("#d9c8a3")})
+	add_child(elder)
+	await get_tree().process_frame
+	elder.add_beard(Color("#eee7d8"))
+	expect(elder.find_child("Headwear", true, false) != null, "turbante do ancião")
+	expect(elder.find_child("TurbanWrap", true, false) != null, "voltas do turbante")
+	expect(elder.find_child("Beard", true, false) != null, "barba do ancião")
+	elder.queue_free()
+
+	var interactable := Interactable.new()
+	interactable.name = "TestInteractable"
+	add_child(interactable)
+	interactable.show_prompt("Falar com Adão")
+	await get_tree().process_frame
+	expect(interactable.prompt_badge != null, "interação cria botão flutuante")
+	expect(interactable.prompt_badge.visible, "botão flutuante fica visível")
+	expect(interactable.prompt_badge.has_text("Falar com Adão"), "botão mostra a ação do NPC")
+	interactable.hide_prompt()
+	expect(not interactable.prompt_badge.visible, "botão some ao sair de perto")
+	interactable.queue_free()
+	await get_tree().process_frame
 
 # ------------------------------------------------------------------ quiz
 
