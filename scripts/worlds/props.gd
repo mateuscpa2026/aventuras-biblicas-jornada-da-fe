@@ -5,6 +5,7 @@ class_name Props
 
 static var _materials: Dictionary = {}
 static var _meshes: Dictionary = {}
+static var _grain: Dictionary = {}
 
 # ---------------------------------------------------------------- materiais
 
@@ -26,6 +27,56 @@ static func mat(color: Color, roughness := 0.9, emission := 0.0, alpha := 1.0) -
 		m.cull_mode = BaseMaterial3D.CULL_DISABLED
 	_materials[key] = m
 	return m
+
+static func fabric_mat(color: Color, roughness := 0.94) -> StandardMaterial3D:
+	var key := "fabric|%s|%.2f" % [color.to_html(true), roughness]
+	if _materials.has(key):
+		return _materials[key]
+	var m := StandardMaterial3D.new()
+	m.albedo_color = color
+	m.albedo_texture = _grain_texture("fabric", 0.055, 118, 0.84, 1.0)
+	m.roughness = roughness
+	m.metallic = 0.0
+	m.uv1_scale = Vector3(3.0, 3.0, 1.0)
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	_materials[key] = m
+	return m
+
+static func fur_mat(color: Color, roughness := 1.0) -> StandardMaterial3D:
+	var key := "fur|%s|%.2f" % [color.to_html(true), roughness]
+	if _materials.has(key):
+		return _materials[key]
+	var m := StandardMaterial3D.new()
+	m.albedo_color = color
+	m.albedo_texture = _grain_texture("fur", 0.16, 41, 0.80, 1.0)
+	m.roughness = roughness
+	m.metallic = 0.0
+	m.uv1_scale = Vector3(4.0, 4.0, 1.0)
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	_materials[key] = m
+	return m
+
+static func _grain_texture(kind: String, frequency: float, noise_seed: int,
+		low: float, high: float) -> NoiseTexture2D:
+	if _grain.has(kind):
+		return _grain[kind]
+	var noise := FastNoiseLite.new()
+	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	noise.frequency = frequency
+	noise.fractal_octaves = 3
+	noise.seed = noise_seed
+	var ramp := Gradient.new()
+	ramp.set_color(0, Color(low, low, low))
+	ramp.set_color(1, Color(high, high, high))
+	var texture := NoiseTexture2D.new()
+	texture.width = 128
+	texture.height = 128
+	texture.seamless = true
+	texture.generate_mipmaps = true
+	texture.noise = noise
+	texture.color_ramp = ramp
+	_grain[kind] = texture
+	return texture
 
 static func unshaded(color: Color, emission := 1.0) -> StandardMaterial3D:
 	var key := "unshaded|%s|%.2f" % [color.to_html(true), emission]

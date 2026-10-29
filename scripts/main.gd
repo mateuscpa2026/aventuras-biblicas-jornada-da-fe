@@ -12,11 +12,13 @@ const PAUSE_SCENE := preload("res://scenes/ui/pause_menu.tscn")
 const BOOK_SCENE := preload("res://scenes/ui/book_panel.tscn")
 const MENU_SCENE := preload("res://scenes/ui/main_menu.tscn")
 const CHAPTERS_SCENE := preload("res://scenes/ui/chapter_select.tscn")
+const CHARACTER_SCENE := preload("res://scenes/ui/character_select.tscn")
 const COMPLETE_SCENE := preload("res://scenes/ui/chapter_complete.tscn")
 
 var world_host: Node3D
 var menu_stage: Node3D
 var menu_camera: Camera3D
+var menu_hero: StylizedRig
 var ui_layer: CanvasLayer
 var menu_layer: CanvasLayer
 var overlay_layer: CanvasLayer
@@ -33,6 +35,7 @@ var pause_menu: PauseMenu
 var book: BookPanel
 var main_menu: MainMenuScreen
 var chapter_select: ChapterSelectScreen
+var character_select: CharacterSelectScreen
 var chapter_complete: ChapterCompleteScreen
 
 var world: Node3D = null
@@ -143,20 +146,8 @@ func _build_menu_stage() -> void:
 
 	var hero := StylizedRig.new()
 	hero.name = "MenuHero"
-	hero.configure({
-		"skin": Color("#e6b48c"),
-		"hair": Color("#4a3223"),
-		"tunic": Color("#3f8f7f"),
-		"trim": Color("#f2c14e"),
-		"pants": Color("#6b5a4a"),
-		"shoe": Color("#4d3a2a"),
-		"gender": "male",
-		"outfit": "tunic",
-		"hair_style": "short",
-		"headwear": "headband",
-		"cloak": Color("#356f63"),
-		"sash": Color("#f2c14e"),
-	})
+	PlayerLooks.apply(hero, SaveSystem.get_player_look())
+	menu_hero = hero
 	hero.position = Vector3(6.0, 0, 1.8)
 	hero.rotation.y = PI
 	menu_stage.add_child(hero)
@@ -194,6 +185,8 @@ func _build_ui() -> void:
 	menu_layer.add_child(main_menu)
 	chapter_select = CHAPTERS_SCENE.instantiate() as ChapterSelectScreen
 	menu_layer.add_child(chapter_select)
+	character_select = CHARACTER_SCENE.instantiate() as CharacterSelectScreen
+	menu_layer.add_child(character_select)
 
 	ui_layer = CanvasLayer.new()
 	ui_layer.name = "UILayer"
@@ -250,10 +243,16 @@ func _connect_signals() -> void:
 	main_menu.chapters_requested.connect(_on_menu_chapters)
 	main_menu.book_requested.connect(_on_menu_book)
 	main_menu.settings_requested.connect(_on_menu_settings)
+	main_menu.explorer_requested.connect(_on_menu_explorer)
 	main_menu.quit_requested.connect(_on_quit)
 
 	chapter_select.chapter_chosen.connect(_on_chapter_chosen)
 	chapter_select.back_requested.connect(_on_chapter_select_back)
+
+	character_select.begin_requested.connect(_on_character_begin)
+	character_select.changed.connect(_on_character_changed)
+	character_select.back_requested.connect(_on_character_back)
+	SaveSystem.player_look_changed.connect(_on_player_look_changed)
 
 	Game.quiz_requested.connect(_on_quiz_requested)
 	Game.chapter_completed.connect(_on_chapter_completed)
@@ -369,6 +368,8 @@ func _show_menu() -> void:
 		main_menu.show_menu()
 	if is_instance_valid(chapter_select):
 		chapter_select.hide_screen()
+	if is_instance_valid(character_select):
+		character_select.hide_screen()
 	Audio.play_music("menu")
 	_apply_mouse()
 
@@ -385,6 +386,7 @@ func _dispose_menu_stage() -> void:
 		menu_stage.queue_free()
 	menu_stage = null
 	menu_camera = null
+	menu_hero = null
 
 func _hide_all_overlays() -> void:
 	if is_instance_valid(intro):
@@ -401,6 +403,8 @@ func _hide_all_overlays() -> void:
 		chapter_complete.visible = false
 	if is_instance_valid(settings_panel):
 		settings_panel.visible = false
+	if is_instance_valid(character_select):
+		character_select.hide_screen()
 
 # ------------------------------------------------------------------ modais
 
@@ -437,13 +441,38 @@ func _apply_mouse() -> void:
 # ------------------------------------------------------------------ menus
 
 func _on_new_game() -> void:
-	Game.start_new_game()
+	main_menu.hide_menu()
+	character_select.open(true)
 
 func _on_continue() -> void:
 	Game.continue_game()
 
 func _on_menu_chapters() -> void:
 	chapter_select.show_screen()
+
+func _on_menu_explorer() -> void:
+	main_menu.hide_menu()
+	character_select.open(false)
+
+func _on_character_begin(look_id: String) -> void:
+	SaveSystem.set_player_look(look_id)
+	character_select.hide_screen()
+	Game.start_new_game()
+
+func _on_character_changed(look_id: String) -> void:
+	SaveSystem.set_player_look(look_id)
+	character_select.hide_screen()
+	main_menu.show_menu()
+
+func _on_character_back() -> void:
+	character_select.hide_screen()
+	main_menu.show_menu()
+
+func _on_player_look_changed(_look_id: String) -> void:
+	if is_instance_valid(menu_hero):
+		PlayerLooks.apply(menu_hero, SaveSystem.get_player_look())
+	if is_instance_valid(main_menu):
+		main_menu.refresh()
 
 func _on_chapter_select_back() -> void:
 	chapter_select.hide_screen()
@@ -636,6 +665,13 @@ func _run_capture() -> void:
 	await _wait(0.9)
 	if _capture_world == "":
 		await _capture("01_menu")
+
+		main_menu.hide_menu()
+		character_select.open(true)
+		await _wait(0.6)
+		await _capture("01b_explorador")
+		character_select.hide_screen()
+		main_menu.show_menu()
 
 		chapter_select.show_screen()
 		await _wait(0.4)

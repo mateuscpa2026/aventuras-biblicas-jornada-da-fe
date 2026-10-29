@@ -12,10 +12,11 @@ extends Node3D
 ##   jewelry: true/false, cloak: Color, sash: Color, veil: Color
 ## Substituível por um modelo .glb + AnimationPlayer mantendo os mesmos métodos.
 
-const HIP_Y := 0.56
+const HIP_Y := 0.60
 
 var skin := Color("#e8b98f")
 var hair := Color("#5a3b26")
+var iris := Color("#5b3a24")
 var tunic := Color("#3f8f7f")
 var trim := Color("#f2c14e")
 var pants := Color("#6f5a4a")
@@ -67,6 +68,7 @@ func _ready() -> void:
 func configure(colors: Dictionary) -> void:
 	skin = colors.get("skin", skin)
 	hair = colors.get("hair", hair)
+	iris = colors.get("iris", iris)
 	tunic = colors.get("tunic", tunic)
 	trim = colors.get("trim", trim)
 	pants = colors.get("pants", pants)
@@ -125,13 +127,14 @@ func _build_legs() -> void:
 	_build_leg(leg_r, false)
 
 func _build_leg(leg: Node3D, is_left: bool) -> void:
-	Props.part(leg, Props.capsule_mesh(0.30, 0.085, 10), Props.mat(pants if outfit == "tunic" else skin),
-		Vector3(0, -0.15, 0), Vector3.ZERO, Vector3(1, 1, 0.95), "Thigh")
-	var knee := _pivot(leg, Vector3(0, -0.30, 0), "Knee")
+	Props.part(leg, Props.capsule_mesh(0.32, 0.085, 10),
+		Props.fabric_mat(pants) if outfit == "tunic" else Props.mat(skin, 0.72),
+		Vector3(0, -0.16, 0), Vector3.ZERO, Vector3(1, 1, 0.95), "Thigh")
+	var knee := _pivot(leg, Vector3(0, -0.32, 0), "Knee")
 	Props.part(knee, Props.sphere_mesh(0.072, 8, 5), Props.mat(pants if outfit == "tunic" else skin), Vector3.ZERO)
-	Props.part(knee, Props.capsule_mesh(0.22, 0.062, 10), Props.mat(skin),
-		Vector3(0, -0.11, 0), Vector3.ZERO, Vector3(1, 1, 0.95), "Shin")
-	var ankle := _pivot(knee, Vector3(0, -0.22, 0), "Ankle")
+	Props.part(knee, Props.capsule_mesh(0.24, 0.062, 10), Props.mat(skin),
+		Vector3(0, -0.12, 0), Vector3.ZERO, Vector3(1, 1, 0.95), "Shin")
+	var ankle := _pivot(knee, Vector3(0, -0.24, 0), "Ankle")
 	_build_foot(ankle)
 	if is_left:
 		knee_l = knee
@@ -147,6 +150,8 @@ func _build_foot(ankle: Node3D) -> void:
 		Vector3(0, 0.012, -0.075), Vector3.ZERO, Vector3(0.85, 0.55, 1.55), "Foot")
 	Props.part(ankle, Props.box_mesh(Vector3(0.145, 0.022, 0.03)), Props.mat(shoe.darkened(0.06)),
 		Vector3(0, 0.038, -0.135), Vector3(10, 0, 0), Vector3.ONE, "SandalStrap")
+	Props.part(ankle, Props.box_mesh(Vector3(0.135, 0.018, 0.032)), Props.mat(shoe.darkened(0.02)),
+		Vector3(0, 0.03, -0.06), Vector3(0, 34, 4), Vector3.ONE, "SandalCross")
 	Props.part(ankle, Props.box_mesh(Vector3(0.15, 0.028, 0.06)), Props.mat(shoe),
 		Vector3(0, 0.05, 0.0), Vector3.ZERO, Vector3.ONE, "AnkleStrap")
 	for i in 3:
@@ -170,10 +175,18 @@ func _build_skirt() -> void:
 	var center := -height * 0.5
 	var top_radius := 0.17
 	var bottom_radius := 0.30 if outfit == "robe" else 0.34 if outfit == "dress" else 0.27
-	Props.part(skirt, Props.cylinder_mesh(top_radius, bottom_radius, height, 16), Props.mat(cloth),
+	Props.part(skirt, Props.cylinder_mesh(top_radius, bottom_radius, height, 16), Props.fabric_mat(cloth),
 		Vector3(0, center, 0), Vector3.ZERO, Vector3(1, 1, 0.88), "SkirtCloth")
 	Props.part(skirt, Props.cylinder_mesh(bottom_radius + 0.012, bottom_radius + 0.012, 0.05, 16),
 		Props.mat(trim), Vector3(0, center - height * 0.5 + 0.025, 0), Vector3.ZERO, Vector3(1, 1, 0.88), "Hem")
+	Props.part(skirt, Props.cylinder_mesh(top_radius + 0.008, top_radius + 0.012, 0.06, 16),
+		Props.fabric_mat(cloth.darkened(0.10)), Vector3(0, 0.015, 0), Vector3.ZERO, Vector3(1, 1, 0.9), "Waistband")
+	for i in 8:
+		var stitch := TAU * float(i) / 8.0
+		Props.part(skirt, Props.box_mesh(Vector3(0.034, 0.022, 0.016)), Props.mat(trim.darkened(0.05)),
+			Vector3(sin(stitch) * (bottom_radius + 0.01), center - height * 0.5 + 0.022,
+				cos(stitch) * (bottom_radius + 0.01) * 0.88),
+			Vector3(0, rad_to_deg(stitch), 0), Vector3.ONE, "HemStitch")
 	var folds := 9 if long else 6
 	var slant := sqrt(height * height + pow(bottom_radius - top_radius, 2.0))
 	var tilt := -atan2(bottom_radius - top_radius, height)
@@ -194,14 +207,22 @@ func _build_skirt() -> void:
 				Vector3(side * 0.035, -0.14, -0.165), Vector3(0, 0, side * 6.0), Vector3.ONE, "SashTail")
 
 func _build_torso() -> void:
-	Props.part(torso, Props.cylinder_mesh(0.185, 0.155, 0.36, 16), Props.mat(tunic),
+	Props.part(torso, Props.cylinder_mesh(0.185, 0.155, 0.36, 16), Props.fabric_mat(tunic),
 		Vector3(0, 0.27, 0), Vector3.ZERO, Vector3(1, 1, 0.78), "TorsoCloth")
-	Props.part(torso, Props.sphere_mesh(0.17, 12, 6), Props.mat(tunic.lightened(0.04)),
+	Props.part(torso, Props.sphere_mesh(0.17, 12, 6), Props.fabric_mat(tunic.lightened(0.04)),
 		Vector3(0, 0.42, 0), Vector3.ZERO, Vector3(1.18, 0.55, 0.76), "Shoulders")
 	Props.part(torso, Props.cylinder_mesh(0.065, 0.075, 0.10, 10), Props.mat(skin),
 		Vector3(0, 0.53, 0), Vector3.ZERO, Vector3(1, 1, 0.9), "Neck")
 	Props.part(torso, Props.cylinder_mesh(0.093, 0.093, 0.028, 12), Props.mat(trim),
 		Vector3(0, 0.512, 0), Vector3.ZERO, Vector3(1, 1, 0.9), "Collar")
+	Props.part(torso, Props.cylinder_mesh(0.088, 0.1, 0.035, 12), Props.fabric_mat(tunic.darkened(0.14)),
+		Vector3(0, 0.49, 0), Vector3.ZERO, Vector3(1, 1, 0.9), "Neckline")
+	# costura central e bordado discreto
+	Props.part(torso, Props.box_mesh(Vector3(0.014, 0.30, 0.02)), Props.fabric_mat(tunic.darkened(0.12)),
+		Vector3(0, 0.265, -0.147), Vector3.ZERO, Vector3.ONE, "FrontSeam")
+	for i in 3:
+		Props.part(torso, Props.box_mesh(Vector3(0.018, 0.018, 0.016)), Props.mat(trim),
+			Vector3(0.055 + i * 0.024, 0.325 - i * 0.024, -0.155), Vector3(0, 0, 45), Vector3.ONE, "Embroidery")
 	# cinto e fivela
 	Props.part(torso, Props.cylinder_mesh(0.168, 0.175, 0.06, 16), Props.mat(trim.darkened(0.12)),
 		Vector3(0, 0.10, 0), Vector3.ZERO, Vector3(1, 1, 0.82), "Belt")
@@ -209,11 +230,15 @@ func _build_torso() -> void:
 		Vector3(0, 0.10, -0.135), Vector3.ZERO, Vector3.ONE, "Buckle")
 	Props.part(torso, Props.box_mesh(Vector3(0.045, 0.13, 0.02)), Props.mat(trim.darkened(0.08)),
 		Vector3(0.03, 0.03, -0.14), Vector3(0, 0, 4), Vector3.ONE, "BeltTail")
+	for i in 4:
+		var angle := -0.9 + i * 0.6
+		Props.part(torso, Props.box_mesh(Vector3(0.025, 0.075, 0.018)), Props.mat(trim.darkened(0.16)),
+			Vector3(sin(angle) * 0.17, 0.10, -cos(angle) * 0.14), Vector3(0, rad_to_deg(angle), 0), Vector3.ONE, "BeltLoop")
 	# faixa transversal (vestido/robe)
 	if outfit != "tunic":
-		Props.part(torso, Props.box_mesh(Vector3(0.085, 0.56, 0.025)), Props.mat(sash),
+		Props.part(torso, Props.box_mesh(Vector3(0.075, 0.56, 0.022)), Props.fabric_mat(sash),
 			Vector3(0, 0.28, -0.145), Vector3(0, 0, 32), Vector3.ONE, "Sash")
-		Props.part(torso, Props.sphere_mesh(0.055, 8, 5), Props.mat(sash.darkened(0.06)),
+		Props.part(torso, Props.sphere_mesh(0.05, 8, 5), Props.fabric_mat(sash.darkened(0.06)),
 			Vector3(-0.13, 0.47, -0.12), Vector3.ZERO, Vector3(1.3, 0.8, 0.6), "SashKnotChest")
 	else:
 		Props.part(torso, Props.box_mesh(Vector3(0.05, 0.42, 0.02)), Props.mat(trim),
@@ -239,16 +264,22 @@ func _build_arms() -> void:
 
 func _build_arm(arm: Node3D, is_left: bool) -> void:
 	var long_sleeve := outfit != "tunic"
-	Props.part(arm, Props.sphere_mesh(0.08, 9, 5), Props.mat(tunic),
+	Props.part(arm, Props.sphere_mesh(0.08, 9, 5), Props.fabric_mat(tunic),
 		Vector3(0, -0.005, 0), Vector3.ZERO, Vector3(0.98, 0.88, 0.88), "ShoulderCloth")
-	Props.part(arm, Props.capsule_mesh(0.24, 0.062, 9), Props.mat(tunic if long_sleeve else skin),
+	Props.part(arm, Props.capsule_mesh(0.24, 0.062, 9), Props.fabric_mat(tunic) if long_sleeve else Props.mat(skin, 0.72),
 		Vector3(0, -0.12, 0), Vector3.ZERO, Vector3(0.9, 1, 0.9), "UpperArm")
 	var elbow := _pivot(arm, Vector3(0, -0.215, 0), "Elbow")
-	Props.part(elbow, Props.capsule_mesh(0.20, 0.055, 9), Props.mat(tunic if long_sleeve else skin),
+	Props.part(elbow, Props.capsule_mesh(0.20, 0.055, 9), Props.fabric_mat(tunic) if long_sleeve else Props.mat(skin, 0.72),
 		Vector3(0, -0.10, 0), Vector3.ZERO, Vector3(0.9, 1, 0.9), "Forearm")
 	if long_sleeve:
 		Props.part(elbow, Props.cylinder_mesh(0.066, 0.062, 0.05, 10), Props.mat(trim),
 			Vector3(0, -0.185, 0), Vector3.ZERO, Vector3(1, 1, 0.95), "Cuff")
+	else:
+		Props.part(elbow, Props.cylinder_mesh(0.07, 0.068, 0.04, 10), Props.fabric_mat(tunic.darkened(0.08)),
+			Vector3(0, -0.005, 0), Vector3.ZERO, Vector3(1, 1, 0.95), "SleeveHem")
+	if long_sleeve:
+		Props.part(arm, Props.cylinder_mesh(0.069, 0.066, 0.022, 10), Props.fabric_mat(tunic.darkened(0.06)),
+			Vector3(0, -0.075, 0), Vector3.ZERO, Vector3(1, 1, 0.95), "SleeveFold")
 	Props.part(elbow, Props.sphere_mesh(0.058, 8, 5), Props.mat(skin),
 		Vector3(0, -0.235, 0), Vector3.ZERO, Vector3(1.05, 0.95, 0.75), "Palm")
 	for i in 3:
@@ -269,9 +300,9 @@ func _build_arm(arm: Node3D, is_left: bool) -> void:
 func _build_cloak() -> void:
 	if cloak.a <= 0.01:
 		return
-	Props.part(torso, Props.cylinder_mesh(0.20, 0.32, 0.74, 14), Props.mat(cloak),
+	Props.part(torso, Props.cylinder_mesh(0.20, 0.32, 0.74, 14), Props.fabric_mat(cloak),
 		Vector3(0, 0.11, 0.155), Vector3.ZERO, Vector3(1, 1, 0.55), "Cloak")
-	Props.part(torso, Props.cylinder_mesh(0.325, 0.325, 0.045, 14), Props.mat(cloak.darkened(0.08)),
+	Props.part(torso, Props.cylinder_mesh(0.325, 0.325, 0.045, 14), Props.fabric_mat(cloak.darkened(0.08)),
 		Vector3(0, -0.25, 0.155), Vector3.ZERO, Vector3(1, 1, 0.55), "CloakHem")
 	Props.part(torso, Props.cylinder_mesh(0.19, 0.225, 0.14, 14), Props.mat(cloak.lightened(0.03)),
 		Vector3(0, 0.42, 0.035), Vector3.ZERO, Vector3(1, 1, 0.66), "CloakShoulder")
@@ -299,44 +330,68 @@ func _build_head() -> void:
 	_build_headwear()
 
 func _build_face() -> void:
-	# olhos expressivos
+	# olhos expressivos, com pálpebra e cílios
 	for side in [-1, 1]:
 		var eye := Node3D.new()
 		eye.name = "EyeL" if side < 0 else "EyeR"
 		eye.position = Vector3(side * 0.083, 0.022, -0.198)
 		head.add_child(eye)
-		Props.part(eye, Props.sphere_mesh(0.048, 10, 6), Props.unshaded(Color("#fffdf4")),
+		Props.part(eye, Props.sphere_mesh(0.048, 12, 7), Props.unshaded(Color("#fffdf4")),
 			Vector3.ZERO, Vector3.ZERO, Vector3(1.0, 1.08, 0.5), "Sclera")
-		Props.part(eye, Props.sphere_mesh(0.03, 8, 5), Props.unshaded(Color("#5b3a24")),
+		Props.part(eye, Props.sphere_mesh(0.031, 10, 6), Props.unshaded(iris),
 			Vector3(0, -0.002, -0.026), Vector3.ZERO, Vector3(1, 1, 0.45), "Iris")
-		Props.part(eye, Props.sphere_mesh(0.016, 6, 4), Props.unshaded(Color("#241812")),
-			Vector3(0, -0.004, -0.04), Vector3.ZERO, Vector3(1, 1, 0.35), "Pupil")
+		Props.part(eye, Props.sphere_mesh(0.016, 8, 5), Props.unshaded(Color("#16100c")),
+			Vector3(0, -0.004, -0.041), Vector3.ZERO, Vector3(1, 1, 0.35), "Pupil")
 		Props.part(eye, Props.sphere_mesh(0.009, 6, 4), Props.unshaded(Color("#ffffff")),
 			Vector3(0.009, 0.011, -0.05), Vector3.ZERO, Vector3.ONE, "Glint")
+		# pálpebra superior e vinco
+		Props.part(head, Props.sphere_mesh(0.052, 12, 6), Props.mat(skin, 0.72),
+			Vector3(side * 0.083, 0.055, -0.2), Vector3(-14, 0, side * -3), Vector3(1.02, 0.34, 0.6), "Eyelid")
+		Props.part(head, Props.box_mesh(Vector3(0.072, 0.009, 0.014)), Props.mat(skin.darkened(0.08)),
+			Vector3(side * 0.083, 0.082, -0.211), Vector3(0, 0, side * -3), Vector3.ONE, "EyelidCrease")
 		if side < 0:
 			eye_l = eye
 		else:
 			eye_r = eye
-	# sobrancelhas
+	# sobrancelhas em arco (dois segmentos)
 	for side in [-1, 1]:
-		Props.part(head, Props.box_mesh(Vector3(0.075, 0.018, 0.024)), Props.mat(hair.darkened(0.05)),
-			Vector3(side * 0.085, 0.098, -0.202), Vector3(0, 0, -side * 8), Vector3.ONE, "Brow")
+		Props.part(head, Props.box_mesh(Vector3(0.052, 0.019, 0.024)), Props.mat(hair.darkened(0.04)),
+			Vector3(side * 0.062, 0.103, -0.204), Vector3(0, 0, -side * 4), Vector3.ONE, "Brow")
+		Props.part(head, Props.box_mesh(Vector3(0.04, 0.015, 0.022)), Props.mat(hair.darkened(0.04)),
+			Vector3(side * 0.107, 0.096, -0.198), Vector3(0, 0, -side * 14), Vector3.ONE, "BrowTip")
 	# cílios (feminino)
 	if gender == "female":
 		for side in [-1, 1]:
 			for i in 3:
-				Props.part(head, Props.box_mesh(Vector3(0.026, 0.009, 0.012)), Props.mat(hair.darkened(0.02)),
-					Vector3(side * (0.062 + i * 0.021), 0.064 - i * 0.004, -0.211), Vector3(0, 0, -side * (18 + i * 6)))
-	# nariz, boca e bochechas
-	Props.part(head, Props.sphere_mesh(0.03, 8, 5), Props.mat(skin.darkened(0.04)),
-		Vector3(0, -0.025, -0.232), Vector3.ZERO, Vector3(0.85, 0.9, 0.7), "Nose")
-	Props.part(head, Props.sphere_mesh(0.032, 8, 5), Props.unshaded(Color("#8c4a42")),
-		Vector3(0, -0.082, -0.224), Vector3.ZERO, Vector3(1.5, 0.38, 0.3), "Mouth")
-	Props.part(head, Props.sphere_mesh(0.022, 6, 4), Props.unshaded(Color("#a75a50")),
-		Vector3(0, -0.095, -0.222), Vector3.ZERO, Vector3(1.1, 0.25, 0.25), "LowerLip")
+				Props.part(head, Props.box_mesh(Vector3(0.028, 0.008, 0.011)), Props.mat(hair.darkened(0.02)),
+					Vector3(side * (0.061 + i * 0.022), 0.066 - i * 0.005, -0.212), Vector3(0, 0, -side * (16 + i * 7)))
+	# nariz com ponte, ponta e narinas
+	Props.part(head, Props.sphere_mesh(0.024, 8, 5), Props.mat(skin.darkened(0.03)),
+		Vector3(0, 0.0, -0.229), Vector3.ZERO, Vector3(0.55, 1.9, 0.65), "NoseBridge")
+	Props.part(head, Props.sphere_mesh(0.031, 9, 6), Props.mat(skin.darkened(0.05)),
+		Vector3(0, -0.032, -0.235), Vector3.ZERO, Vector3(0.95, 0.8, 0.75), "Nose")
 	for side in [-1, 1]:
-		Props.part(head, Props.sphere_mesh(0.045, 7, 4), Props.mat(skin.lightened(0.10) if gender == "female" else skin),
+		Props.part(head, Props.sphere_mesh(0.012, 6, 4), Props.mat(skin.darkened(0.28)),
+			Vector3(side * 0.02, -0.044, -0.231), Vector3(0, 0, side * 18), Vector3(1.1, 0.65, 0.5), "Nostril")
+	# boca com lábios e cantos de sorriso
+	Props.part(head, Props.sphere_mesh(0.032, 9, 5), Props.unshaded(Color("#9d5148")),
+		Vector3(0, -0.078, -0.224), Vector3.ZERO, Vector3(1.45, 0.34, 0.32), "Mouth")
+	Props.part(head, Props.sphere_mesh(0.022, 7, 4), Props.unshaded(Color("#b45f55")),
+		Vector3(0, -0.092, -0.221), Vector3.ZERO, Vector3(1.25, 0.3, 0.28), "LowerLip")
+	Props.part(head, Props.sphere_mesh(0.009, 6, 4), Props.unshaded(Color("#7d3f3a")),
+		Vector3(0, -0.078, -0.239), Vector3.ZERO, Vector3(2.4, 0.28, 0.2), "MouthLine")
+	for side in [-1, 1]:
+		Props.part(head, Props.sphere_mesh(0.007, 5, 3), Props.unshaded(Color("#8c4a42")),
+			Vector3(side * 0.045, -0.072, -0.222), Vector3.ZERO, Vector3(1, 0.8, 0.4), "SmileCorner")
+	# bochechas e queixo
+	for side in [-1, 1]:
+		Props.part(head, Props.sphere_mesh(0.045, 7, 4), Props.mat(skin.lightened(0.10) if gender == "female" else skin, 0.72),
 			Vector3(side * 0.13, -0.052, -0.188), Vector3.ZERO, Vector3(1, 0.5, 0.28), "Cheek")
+	# brincos discretos para quem usa joias
+	if jewelry:
+		for side in [-1, 1]:
+			Props.part(head, Props.sphere_mesh(0.012, 6, 4), Props.mat(trim),
+				Vector3(side * 0.244, -0.028, 0.005), Vector3.ZERO, Vector3(1, 1.8, 0.8), "Earring")
 
 func _build_hair() -> void:
 	var color := hair
@@ -345,27 +400,58 @@ func _build_hair() -> void:
 			Props.part(head, Props.sphere_mesh(0.15, 8, 5), Props.mat(color),
 				Vector3(side * 0.13, -0.02, 0.1), Vector3.ZERO, Vector3(0.55, 0.7, 0.9), "HairSide")
 		return
-	var cap := Props.part(head, Props.sphere_mesh(0.242, 14, 8), Props.mat(color),
+	Props.part(head, Props.sphere_mesh(0.242, 16, 9), Props.mat(color),
 		Vector3(0, 0.06, 0.058), Vector3.ZERO, Vector3(1.03, 0.92, 0.98), "Hair")
-	Props.part(head, Props.sphere_mesh(0.11, 10, 5), Props.mat(color),
-		Vector3(0, 0.16, -0.005), Vector3.ZERO, Vector3(1.5, 0.55, 1.2), "HairTop")
+	Props.part(head, Props.sphere_mesh(0.11, 10, 5), Props.mat(color.darkened(0.03)),
+		Vector3(0, 0.16, 0.005), Vector3.ZERO, Vector3(1.5, 0.55, 1.15), "HairTop")
+	# linha do cabelo e costeletas
+	for i in 7:
+		var t := float(i) / 6.0
+		var x := lerpf(-0.17, 0.17, t)
+		var z := -0.205 + absf(x) * 0.42
+		Props.part(head, Props.sphere_mesh(0.026, 7, 4), Props.mat(color.darkened(0.02)),
+			Vector3(x, 0.128 - absf(x) * 0.12, z), Vector3(0, 0, 0), Vector3(1.2, 0.6, 0.8), "Hairline")
+	for side in [-1, 1]:
+		Props.part(head, Props.capsule_mesh(0.09, 0.021, 6), Props.mat(color.darkened(0.03)),
+			Vector3(side * 0.205, 0.035, -0.085), Vector3(6, 0, side * 5), Vector3(1, 1, 0.7), "Sideburn")
+	# fios do topo
+	for i in 4:
+		var t := float(i) / 3.0
+		Props.part(head, Props.capsule_mesh(0.23, 0.012, 6), Props.mat(color.lightened(0.04 - t * 0.04)),
+			Vector3(lerpf(-0.11, 0.11, t), 0.235, 0.01), Vector3(78, 0, lerpf(16, -16, t)), Vector3(1, 1, 0.7), "HairStrand")
 	# franja
-	var fringe := Props.part(head, Props.sphere_mesh(0.10, 8, 5), Props.mat(color.darkened(0.03)),
-		Vector3(0, 0.158, -0.155), Vector3(-12, 0, 0), Vector3(1.6, 0.38, 0.55), "Fringe")
+	var fringe := Props.part(head, Props.sphere_mesh(0.10, 9, 6), Props.mat(color.darkened(0.03)),
+		Vector3(0, 0.155, -0.158), Vector3(-12, 0, 0), Vector3(1.62, 0.4, 0.55), "Fringe")
 	fringe.rotation_degrees.x = -12
 	for side in [-1, 1]:
-		Props.part(head, Props.sphere_mesh(0.06, 7, 4), Props.mat(color.darkened(0.04)),
-			Vector3(side * 0.195, 0.05, -0.12), Vector3.ZERO, Vector3(0.7, 1.5, 0.7), "HairSide")
+		Props.part(head, Props.sphere_mesh(0.06, 8, 5), Props.mat(color.darkened(0.04)),
+			Vector3(side * 0.195, 0.045, -0.12), Vector3.ZERO, Vector3(0.7, 1.5, 0.7), "HairSide")
+	if hair_style == "curly":
+		# cachos em espiral por cima e nas laterais
+		for i in 26:
+			var angle := TAU * fmod(float(i) * 0.61803398875, 1.0)
+			var elevation := float(i) / 25.0
+			var y := lerpf(-0.09, 0.25, elevation)
+			var radius := sqrt(maxf(0.02, 1.0 - pow(y / 0.27, 2.0))) * 0.252
+			var x := cos(angle) * radius
+			var z := sin(angle) * radius * 0.98 + 0.05
+			if z < -0.11 and y < 0.13:
+				continue
+			Props.part(head, Props.sphere_mesh(0.055 + 0.012 * (1.0 - elevation), 7, 4),
+				Props.mat(color.lightened(0.02 if i % 2 == 0 else -0.02)),
+				Vector3(x, y, z), Vector3(0, rad_to_deg(angle), 0), Vector3(1.15, 0.85, 1.0), "Curl")
 	if hair_style == "long" or hair_style == "braid" or hair_style == "bun":
-		Props.part(head, Props.box_mesh(Vector3(0.37, 0.35, 0.10)), Props.mat(color.darkened(0.03)),
-			Vector3(0, -0.16, 0.15), Vector3(5, 0, 0), Vector3.ONE, "HairBack")
+		Props.part(head, Props.box_mesh(Vector3(0.35, 0.36, 0.10)), Props.mat(color.darkened(0.04)),
+			Vector3(0, -0.17, 0.155), Vector3(5, 0, 0), Vector3.ONE, "HairBack")
 		for side in [-1, 1]:
-			Props.part(head, Props.capsule_mesh(0.34, 0.05, 8), Props.mat(color),
-				Vector3(side * 0.215, -0.19, 0.05), Vector3(0, 0, side * 4), Vector3(1, 1, 0.8), "HairStrand")
+			Props.part(head, Props.capsule_mesh(0.36, 0.045, 8), Props.mat(color.lightened(0.02)),
+				Vector3(side * 0.205, -0.19, 0.045), Vector3(0, 0, side * 4), Vector3(1, 1, 0.75), "HairStrand")
+		Props.part(head, Props.sphere_mesh(0.085, 8, 5), Props.mat(color.darkened(0.03)),
+			Vector3(0, -0.33, 0.18), Vector3.ZERO, Vector3(1.5, 0.8, 0.6), "HairEnd")
 	if hair_style == "braid":
 		for i in 5:
-			Props.part(head, Props.sphere_mesh(0.062 - i * 0.007, 7, 4), Props.mat(color.lightened(0.02 * i)),
-				Vector3(0.19 + i * 0.006, -0.20 - i * 0.085, 0.10 - i * 0.02), Vector3.ZERO,
+			Props.part(head, Props.sphere_mesh(0.062 - i * 0.007, 8, 5), Props.mat(color.lightened(0.02 * i)),
+				Vector3(0.19 + i * 0.006, -0.20 - i * 0.085, 0.10 - i * 0.02), Vector3(0, 0, i * 12),
 				Vector3(0.9, 1.25, 0.9), "Braid%d" % i)
 		Props.part(head, Props.box_mesh(Vector3(0.06, 0.035, 0.05)), Props.mat(trim),
 			Vector3(0.20, -0.585, 0.0), Vector3.ZERO, Vector3.ONE, "BraidTie")
@@ -374,6 +460,8 @@ func _build_hair() -> void:
 			Vector3(0, 0.02, 0.235), Vector3.ZERO, Vector3(1, 1, 0.85), "Bun")
 		Props.part(head, Props.cylinder_mesh(0.09, 0.095, 0.04, 10), Props.mat(trim),
 			Vector3(0, 0.08, 0.225), Vector3(18, 0, 0), Vector3.ONE, "BunBand")
+		Props.part(head, Props.capsule_mesh(0.16, 0.012, 6), Props.mat(color.lightened(0.03)),
+			Vector3(0.02, 0.02, 0.30), Vector3(0, 0, 28), Vector3.ONE, "BunPin")
 
 func _build_headwear() -> void:
 	match headwear:

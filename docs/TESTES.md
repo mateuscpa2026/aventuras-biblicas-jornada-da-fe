@@ -31,7 +31,7 @@ sai com código `1` (útil para CI).
 > Eles exercitam os nós reais das cenas chamando os métodos de interação e os
 > sistemas de missão, diálogo, save e quiz.
 
-## `smoke_test` — sistemas e dados (439 checagens)
+## `smoke_test` — sistemas e dados (480 checagens)
 
 Cobre:
 
@@ -65,13 +65,19 @@ Cobre:
 - **Personagens**: o rig masculino de túnica tem saia curta, faixa na cabeça e
   sandálias; o feminino de vestido tem trança, véu e bracelete; o ancião com
   turbante tem voltas de tecido e barba. Nenhum homem recebe véu.
+- **Exploradores e seleção**: os quatro presets existem com ids únicos, são
+  válidos, expõem todas as cores e montam o rig com gênero/roupa/penteado
+  corretos; `SaveSystem.player_look` grava, lê e cai no padrão diante de um id
+  inválido; a `CharacterSelectScreen` cria quatro cartões e quatro prévias 3D,
+  atualiza enquanto aberta, marca a escolha, emite `changed` ao confirmar e
+  desliga a renderização ao fechar.
 - **Botão flutuante**: uma interação cria o `PromptBadge`, mostra a ação pedida
   e o esconde ao sair de perto.
 
 O teste salva uma cópia do save do jogador no início e restaura no final, então
 rodá-lo não apaga progresso real.
 
-## `world_test` — integração das cenas (292 checagens)
+## `world_test` — integração das cenas (381 checagens)
 
 Para cada um dos cinco mundos (`eden`, `ark`, `david`, `moses`, `jesus`),
 instancia a cena real e verifica:
@@ -83,6 +89,9 @@ instancia a cena real e verifica:
   confere `is_on_floor()` e que ele não atravessou o cenário;
 - pelo menos 6 objetos interativos e pelo menos 2 NPCs com diálogo e nome
   (Moisés usa 4 viajantes em vez de animais);
+- cada animal tem rig montado, cabeça e olhos visíveis, quatro patas (exceto
+  peixe e pássaro), nome e texto de ação preenchidos; os que podem acompanhar
+  têm raio de interação válido;
 - conversar com um NPC abre o diálogo, pausa a lógica, `finish()` fecha e marca
   `_talked`;
 - exatamente 3 pergaminhos, cada um ligado a uma história válida, mesma missão
@@ -107,8 +116,8 @@ Windows 10 x64):
 
 | Suíte | Checagens | Falhas | Saída |
 | --- | ---: | ---: | --- |
-| `smoke_test.tscn` | 439 | 0 | `0` |
-| `world_test.tscn` | 292 | 0 | `0` |
+| `smoke_test.tscn` | 480 | 0 | `0` |
+| `world_test.tscn` | 381 | 0 | `0` |
 
 ### Aviso esperado ao sair (headless)
 
@@ -158,11 +167,13 @@ alvo:
 4. Pausa (`Esc`), configurações (volumes, resolução, tela cheia, qualidade,
    sensibilidade) e persistência delas após reabrir o jogo.
 5. `Continuar` retomando o último mundo e capítulos concluídos sendo rejogados.
-6. Áudio audível e agradável: conferir as seis trilhas em loop e o volume
-   relativo entre música e efeitos (os arquivos continuam sintetizados — ver
+6. Áudio audível e agradável: conferir as seis trilhas em loop (cada uma tem
+   introdução, tema, levantada, clímax e encerramento) e o volume relativo entre
+   música e efeitos (os arquivos continuam sintetizados — ver
    [RECURSOS_PROVISORIOS.md](RECURSOS_PROVISORIOS.md)).
 7. Leitura do botão flutuante sobre NPCs, animais e objetos a diferentes
-   distâncias, e das roupas masculinas/femininas em cada mundo.
+   distâncias, das roupas masculinas/femininas em cada mundo e da troca de
+   explorador no menu.
 8. Desempenho em PC intermediário (o jogo usa primitivas procedurais e não
    depende de assets pesados).
 

@@ -7,10 +7,17 @@ quebra-cabeças de memória e salvamento local.
 
 Os personagens têm rosto, cabelo, barba, turbante, véu, joias e sandálias
 modelados por código, com roupas masculinas (túnica/manto) e femininas
-(vestido comprido, trança e véu) distintas. Ao chegar perto de alguém ou de um
-objeto, a ação aparece em um **botão flutuante com a tecla E** acima do
-personagem. A trilha sonora tem seis temas originais e sintetizados, com melodia,
-acompanhamento e percussão suave.
+(vestido comprido, trança e véu) distintas. A criança escolhe quem vai guiar
+entre quatro exploradores originais — **Téo, Ada, Nina e Beni** — em uma tela
+com prévia 3D de cada um; a escolha fica salva e pode ser trocada no menu.
+Os animais (ovelha, cabra, burro, cervo, coelho, pássaro e peixe) também são
+modelados por código, com lã em camadas, focinho, olhos com brilho e pálpebras,
+patas articuladas, cauda e animações de respiração, pastar e comemorar. Ao
+chegar perto de alguém ou de um objeto, a ação aparece em um **botão flutuante
+com a tecla E** acima do personagem. A trilha sonora tem seis temas originais e
+sintetizados, cada um com 48 compassos em cinco seções (introdução, tema,
+levantada, clímax e encerramento), melodia conduzida, contracanto, arpejos,
+baixo, percussão suave e reverb com loop sem emenda.
 
 O projeto é **autossuficiente**: todos os modelos, cenários, animações, ícones e
 áudios são gerados por código ou sintetizados, sem dependência de arquivos
@@ -83,11 +90,11 @@ rejogados pelo menu **Capítulos**; os pergaminhos já guardados permanecem no
 ## Testes automatizados
 
 ```bash
-# 1) Sistemas, dados, missões, save, personagens e áudio (439 checagens)
+# 1) Sistemas, dados, missões, save, personagens, seleção e áudio (480 checagens)
 Godot_v4.7.2-stable_win64_console.exe --headless --path . res://tests/smoke_test.tscn
 
-# 2) Integração das cinco cenas: jogador, colisão, NPCs, diálogo,
-#    pergaminhos, pedra da memória e conclusão de capítulo (292 checagens)
+# 2) Integração das cinco cenas: jogador, colisão, NPCs, animais, diálogo,
+#    pergaminhos, pedra da memória e conclusão de capítulo (381 checagens)
 Godot_v4.7.2-stable_win64_console.exe --headless --path . res://tests/world_test.tscn
 ```
 
@@ -125,10 +132,12 @@ Para um executável único, marque *Embed PCK* nas opções do preset.
 scenes/      player, worlds, characters, interactions, ui, main
 scripts/     player, worlds, characters, interactions, systems, ui
 data/        chapters.json, missions/, dialogues/, quizzes.json, bible_stories/
-assets/      fonts (Baloo 2, OFL), audio (6 trilhas originais e efeitos sintetizados)
+assets/      fonts (Baloo 2, OFL), icon (emblema transparente PNG/ICO),
+             audio (6 trilhas originais e efeitos sintetizados)
 docs/        conteúdo bíblico, arquitetura, recursos, testes
 tests/       smoke_test e world_test (headless)
-tools/       generate_audio.py (síntese dos WAVs provisórios)
+tools/       generate_audio.py (síntese dos WAVs provisórios),
+             animal_preview.tscn (inspeção visual dos animais)
 build/       executável Windows exportado
 ```
 
@@ -146,11 +155,17 @@ Documentação complementar:
 
 - Os cinco capítulos existem, são jogáveis e concluíveis; a progressão
   desbloqueia o capítulo seguinte e o save sobrevive a recarregar/corromper.
-- `439` checagens de sistemas + `292` checagens de cenas, **0 falhas**.
+- `480` checagens de sistemas + `381` checagens de cenas, **0 falhas**.
+- A criança escolhe entre quatro exploradores com prévia 3D; a escolha é
+  persistida e aplicada em todos os mundos.
+- As seis trilhas foram refeitas com forma de 48 compassos e orquestração
+  variada; cada faixa emenda em loop (descontinuidade ≤ 0,005) e o volume entre
+  elas está nivelado.
+- O emblema do jogo foi aplicado como ícone do executável (16–256 px), do
+  instalador, dos atalhos e da janela do jogo, com fundo transparente.
 - Build Windows exportado e executado em modo de captura, gerando as imagens
-  das cinco telas de mundo e dos menus.
-- Instalador testado: instalação silenciosa, execução do jogo em tela cheia a
-  partir da pasta instalada e desinstalação sem resíduos de atalhos.
+  das cinco telas de mundo e dos menus; o instalador foi instalado e o jogo
+  aberto a partir da pasta instalada.
 - O que ainda depende de validação humana: sensação de movimento/câmera em cada
   PC alvo e aprovação artística/áudio final (os recursos continuam provisórios
   por projeto). Ver limitações em `docs/RECURSOS_PROVISORIOS.md`.

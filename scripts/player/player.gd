@@ -34,20 +34,7 @@ func _ready() -> void:
 
 	rig = StylizedRig.new()
 	rig.name = "Rig"
-	rig.configure({
-		"skin": Color("#e6b48c"),
-		"hair": Color("#4a3223"),
-		"tunic": Color("#3f8f7f"),
-		"trim": Color("#f2c14e"),
-		"pants": Color("#6b5a4a"),
-		"shoe": Color("#4d3a2a"),
-		"gender": "male",
-		"outfit": "tunic",
-		"hair_style": "short",
-		"headwear": "headband",
-		"cloak": Color("#356f63"),
-		"sash": Color("#f2c14e"),
-	})
+	PlayerLooks.apply(rig, SaveSystem.get_player_look())
 	add_child(rig)
 
 	camera_rig = PlayerCamera.new()

@@ -167,23 +167,56 @@ curto. Todas as peças (rosto, olhos, cílios, mãos, sandálias, dobras, turban
 barba) são nós nomeados, e a animação procedural controla pernas, braços, saia,
 tronco, cabeça e piscadas.
 
+### Exploradores e seleção de personagem
+
+`scripts/player/player_looks.gd` define os quatro exploradores (Téo, Ada, Nina
+e Beni) como presets de `StylizedRig`: pele, cabelo, íris, túnica/vestido,
+barra, calça, sandália, faixa, gênero, penteado, adorno de cabeça e joias.
+`CharacterSelectScreen` (`scenes/ui/character_select.tscn`) instancia um
+`SubViewport` 400×400 transparente por explorador, cada um com seu próprio
+`World3D`, chão de estúdio e três luzes; os viewports só renderizam
+(`UPDATE_ALWAYS`) enquanto a tela está aberta. Cada cartão é um `Button` com
+prévia, nome, jeito e marca de seleção.
+
+A escolha é validada e persistida por `SaveSystem.player_look` (com sinal
+`player_look_changed`); `PlayerLooks.is_valid()` protege contra ids inválidos e
+o padrão é `teo`. O `PlayerCharacter` aplica o look salvo ao entrar em cada
+mundo, e a tela pode ser aberta pelo menu a qualquer momento.
+
+### Animais
+
+`AnimalRig` monta sete animais por código: ovelha (três anéis de mechas de lã),
+cabra (chifres em três segmentos), burro (crina e orelhas longas), cervo
+(galhada ramificada e focinho alongado), coelho (patas traseiras e orelhas
+rosadas), pássaro (asas dobradas com penas) e peixe (brânquias, boca e cauda).
+Cada rig tem olhos com brilho e piscadas, orelhas que se mexem, patas em pivôs
+articulados, respiração, balanço de cauda e comemoração; todos olham para −Z,
+igual aos NPCs.
+
 ## Interface
 
-`scenes/ui/` — menu, seleção de capítulos, introdução, HUD (capítulo, missões,
-pergaminhos, itens carregados), diálogo, livro, quiz, pausa, configurações,
-toast, capítulo concluído. `ui_kit.gd` concentra tipografia, botões, cartões e
-espaçamentos para manter a identidade visual. `prompt_badge.gd` desenha o botão
-3D de interação em um SubViewport transparente, reutilizando o mesmo UIKit.
+`scenes/ui/` — menu, seleção de explorador, seleção de capítulos, introdução,
+HUD (capítulo, missões, pergaminhos, itens carregados), diálogo, livro, quiz,
+pausa, configurações, toast, capítulo concluído. `ui_kit.gd` concentra
+tipografia, botões, cartões e espaçamentos para manter a identidade visual.
+`prompt_badge.gd` desenha o botão 3D de interação em um SubViewport
+transparente, reutilizando o mesmo UIKit.
 
 ## Música
 
 `tools/generate_audio.py` sintetiza as seis trilhas em Python puro (sem
 bibliotecas externas): tabelas de onda por timbre (flauta, palheta, trompa,
-cordas, dedilhado, harpa, baixo), melodia escrita por compasso, acompanhamento
-por estilo (valsa, balanço, heroico, místico, terno), percussão suave e reverb
-com cauda dobrada para o início, garantindo loop sem clique. Cada tema tem 16
-compassos (23–48 s). O `AudioManager` calcula o fim do loop em quadros a partir
-de `get_length()`, compatível com a importação QOA do Godot.
+cordas, dedilhado, harpa, baixo e “vidro”), melodia escrita por compasso,
+acompanhamento por estilo (valsa, balanço, heroico, místico, terno), percussão
+suave e reverb com cauda dobrada para o início, garantindo loop sem clique.
+
+Cada tema tem **48 compassos em cinco seções** — `intro` (4), `main` (16),
+`lift` (8), `full` (16) e `outro` (4) — com energia, progressão, arranjo,
+contracanto e padrões de harpa próprios. A melodia recebe humanização de tempo
+e dinâmica, vibrato por instrumento, dobra em oitava nos clímax e uma camada de
+cordas de apoio no tema de Davi. Durações finais: 72 s (Éden) a 137 s (Jesus).
+O `AudioManager` calcula o fim do loop em quadros a partir de `get_length()`,
+compatível com a importação QOA do Godot.
 
 ## Como estender
 
@@ -208,5 +241,7 @@ de `get_length()`, compatível com a importação QOA do Godot.
 ## Captura e testes
 
 `main.gd` aceita `--capture=<pasta>` e `--capture-world=<id>` para gerar PNGs
-dos menus e de cada mundo (usado na verificação visual). Os testes headless
-estão em `tests/` e são independentes do modo de captura.
+dos menus e de cada mundo (usado na verificação visual). `tools/animal_preview.tscn`
+gera um PNG dos sete animais em um palco neutro (opcionalmente `-- only=ovelha`;
+a saída padrão é `tmp/animal_preview.png`). Os testes headless estão em
+`tests/` e são independentes do modo de captura.

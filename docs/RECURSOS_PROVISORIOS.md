@@ -11,16 +11,16 @@ Nada aqui está "faltando" para o jogo rodar — são pontos de melhoria artíst
 
 | Recurso | Situação | Onde |
 | --- | --- | --- |
-| Personagens (jogador e NPCs) | malhas primitivas detalhadas (rosto, mãos, cabelo, véu, turbante, barba, joias, sandálias), roupas masculinas/femininas e animação procedural | `scripts/player/stylized_rig.gd`, `scripts/characters/npc.gd` |
-| Animais | malhas primitivas + animação procedural (patas, orelhas, asas, peixes) | `scripts/characters/animal_rig.gd` |
+| Personagens (jogador e NPCs) | malhas primitivas detalhadas (rosto, mãos, cabelo, véu, turbante, barba, joias, sandálias), roupas masculinas/femininas e animação procedural; quatro exploradores jogáveis (Téo, Ada, Nina e Beni) com prévia 3D | `scripts/player/stylized_rig.gd`, `scripts/player/player_looks.gd`, `scripts/characters/npc.gd` |
+| Animais | malhas primitivas + animação procedural (patas articuladas, orelhas, asas, cauda, olhos com brilho e piscadas) | `scripts/characters/animal_rig.gd` |
 | Cenário (árvores, rochas, tendas, mercado, arca, montanha) | geometria procedural | `scripts/worlds/props.gd`, `scripts/worlds/*.gd` |
 | Céu, luz, névoa, colinas | `WorldEnvironment` procedural | `scripts/worlds/env_builder.gd` |
-| Texturas | nenhuma textura externa; materiais com cor sólida | `assets/textures/` (vazia de propósito) |
+| Texturas | nenhuma textura externa; materiais com cor sólida e ruído procedural em tecido/lã | `assets/textures/` (vazia de propósito) |
 | Modelos 3D importados | nenhum; `assets/models/` e `assets/materials/` ficam para arte futura | — |
 | Animações importadas | nenhuma; `assets/animations/` reservado | — |
-| Música e efeitos | WAV sintetizados: 6 trilhas originais de 16 compassos com melodia, harmonia, baixo, percussão e reverb; 8 efeitos | `assets/audio/`, gerados por `tools/generate_audio.py` |
+| Música e efeitos | WAV sintetizados: 6 trilhas originais de 48 compassos em cinco seções (72–137 s), com melodia, contracanto, harmonia, baixo, percussão e reverb; 8 efeitos | `assets/audio/`, gerados por `tools/generate_audio.py` |
 | Fonte | Baloo 2 (SIL OFL 1.1) | `assets/fonts/` |
-| Ícone | SVG original | `icon.svg` |
+| Ícone | emblema original rasterizado com fundo transparente (PNG 1024 px e ICO 16–256 px), aplicado ao jogo, ao instalador e aos atalhos | `assets/icon/`, `installer/app.ico` |
 
 ## Áudio
 
@@ -44,10 +44,11 @@ Para substituir por áudio definitivo:
 2. Prefira **WAV** para a música em loop: o gerenciador configura
    `loop_mode = LOOP_FORWARD` automaticamente. Com **OGG**, ative o loop nas
    configurações de importação do arquivo no Godot.
-3. Duração sugerida da trilha: 30–90 s; os arquivos atuais têm 23–48 s e já
-   emendam em loop (a cauda de reverb é dobrada para o início).
+3. Duração sugerida da trilha: pelo menos 60 s; os arquivos atuais têm 72–137 s
+   e emendam em loop (a cauda de reverb é dobrada para o início).
 4. Níveis: pico em torno de −6 dBFS para música e −3 dBFS para efeitos; o
-   volume final é controlado por `Settings` (geral × música/efeitos).
+   volume final é controlado por `Settings` (geral × música/efeitos). As seis
+   faixas estão niveladas entre si (RMS 0,132–0,148).
 5. Depois de trocar arquivos, rode `Godot --headless --path . --import` e os
    testes em `docs/TESTES.md` (eles verificam existência e carregamento dos 14
    arquivos).
@@ -70,8 +71,9 @@ introduzir arte definitiva:
 
 ## Limitações visuais conhecidas
 
-- Formas simples e cores chapadas (sem texturas, normal maps ou sombras suaves
-  de alta qualidade) — estilo “brinquedo de madeira”, coerente, mas não fotorreal.
+- Formas simples e cores chapadas (sem texturas pintadas, normal maps ou
+  sombras suaves de alta qualidade) — estilo “brinquedo de madeira”, coerente e
+  mais detalhado que um protótipo, mas não fotorreal.
 - Sombras direcionais usam o renderizador **Compatibility**; em placas antigas o
   Godot troca para ANGLE automaticamente.
 - Alguns elementos (montanha do sermão, paredes do mar) são blocos funcionais e
@@ -81,6 +83,9 @@ introduzir arte definitiva:
   aproximar.
 - O menu usa um diorama 3D recortado; a composição pode ser ajustada em
   `scripts/main.gd` (`_build_menu_stage`).
+- O ícone deriva do emblema fornecido; para arte vetorial definitiva, substitua
+  `assets/icon/icon.png` e `assets/icon/app.ico` (mesmo tamanho/transparência) e
+  `installer/app.ico`.
 
 ## Checklist antes de publicar
 

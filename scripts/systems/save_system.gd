@@ -10,6 +10,8 @@ const SAVE_VERSION := 1
 var data: Dictionary = {}
 var last_error := ""
 
+signal player_look_changed(look_id: String)
+
 func _ready() -> void:
 	data = _default_data()
 	if has_save():
@@ -24,6 +26,7 @@ func _default_data() -> Dictionary:
 		"storybook": [],
 		"settings": {},
 		"last_world": "eden",
+		"player_look": PlayerLooks.DEFAULT_ID,
 		"created_at": Time.get_datetime_string_from_system(),
 	}
 
@@ -48,8 +51,10 @@ func load_game() -> bool:
 
 func new_game(keep_settings := true) -> void:
 	var settings: Dictionary = data.get("settings", {}) if keep_settings else {}
+	var look := get_player_look() if keep_settings else PlayerLooks.DEFAULT_ID
 	data = _default_data()
 	data["settings"] = settings
+	data["player_look"] = look
 	write()
 
 func write() -> bool:
@@ -145,6 +150,10 @@ func _sanitize(raw: Dictionary) -> Dictionary:
 	var last_world = raw.get("last_world", "eden")
 	if typeof(last_world) == TYPE_STRING and last_world != "":
 		clean["last_world"] = last_world
+
+	var look = raw.get("player_look", PlayerLooks.DEFAULT_ID)
+	if typeof(look) == TYPE_STRING and PlayerLooks.is_valid(look):
+		clean["player_look"] = look
 	return clean
 
 func is_chapter_unlocked(world_id: String) -> bool:
@@ -201,6 +210,16 @@ func set_last_world(world_id: String) -> void:
 
 func get_last_world() -> String:
 	return str(data.get("last_world", "eden"))
+
+func set_player_look(look_id: String) -> void:
+	var safe := look_id if PlayerLooks.is_valid(look_id) else PlayerLooks.DEFAULT_ID
+	data["player_look"] = safe
+	write()
+	player_look_changed.emit(safe)
+
+func get_player_look() -> String:
+	var look := str(data.get("player_look", PlayerLooks.DEFAULT_ID))
+	return look if PlayerLooks.is_valid(look) else PlayerLooks.DEFAULT_ID
 
 func get_settings() -> Dictionary:
 	var s = data.get("settings", {})

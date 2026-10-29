@@ -14,6 +14,7 @@ func _ready() -> void:
 	_test_data()
 	_test_audio()
 	await _test_characters_and_badge()
+	await _test_player_looks()
 	await _test_quiz_dialog()
 	await _test_mission_chains()
 	_test_persistence()
@@ -241,6 +242,68 @@ func _test_characters_and_badge() -> void:
 	interactable.hide_prompt()
 	expect(not interactable.prompt_badge.visible, "botão some ao sair de perto")
 	interactable.queue_free()
+	await get_tree().process_frame
+
+# ------------------------------------------------------------------ escolha do explorador
+
+func _test_player_looks() -> void:
+	print("[test] --- escolha do explorador ---")
+	var ids := PlayerLooks.ids()
+	expect(ids.size() == 4, "existem 4 exploradores para escolher")
+	expect(ids.has(PlayerLooks.DEFAULT_ID), "explorador padrão está na lista")
+	var unique := {}
+	for id in ids:
+		unique[id] = true
+	expect(unique.size() == ids.size(), "cada explorador tem identificador próprio")
+	expect(PlayerLooks.is_valid("teo") and not PlayerLooks.is_valid("ninguem"), "validação de explorador")
+	expect(PlayerLooks.is_valid("ada") and PlayerLooks.is_valid("nina") and PlayerLooks.is_valid("beni"),
+		"meninas e meninos podem ser escolhidos")
+
+	for id in ids:
+		var colors := PlayerLooks.colors(id)
+		expect(colors.has("skin") and colors.has("hair") and colors.has("tunic") and colors.has("iris"),
+			"%s tem cores de pele, cabelo, olhos e roupa" % id)
+		expect(colors.has("gender") and colors.has("outfit"), "%s tem vestimenta definida" % id)
+		var rig := StylizedRig.new()
+		PlayerLooks.apply(rig, id)
+		add_child(rig)
+		await get_tree().process_frame
+		expect(rig.built, "%s é construído na prévia 3D" % id)
+		expect(rig.gender == str(colors["gender"]), "%s usa o gênero correto" % id)
+		expect(rig.outfit == str(colors["outfit"]), "%s usa a roupa correta" % id)
+		expect(rig.find_child("Head", true, false) != null, "%s tem cabeça visível" % id)
+		rig.queue_free()
+		await get_tree().process_frame
+
+	var original := SaveSystem.get_player_look()
+	SaveSystem.set_player_look("ada")
+	expect(SaveSystem.get_player_look() == "ada", "escolha fica guardada no save")
+	SaveSystem.set_player_look("nao_existe")
+	expect(SaveSystem.get_player_look() == PlayerLooks.DEFAULT_ID, "explorador inválido volta ao padrão")
+	SaveSystem.set_player_look(original)
+
+	var screen := CharacterSelectScreen.new()
+	add_child(screen)
+	await get_tree().process_frame
+	screen.open(false)
+	expect(screen.visible, "tela de escolha abre")
+	expect(screen._cards.size() == 4, "a tela mostra um cartão por explorador")
+	expect(screen._previews.size() == 4, "cada cartão tem prévia 3D própria")
+	expect(screen._previews[0]["viewport"].render_target_update_mode == SubViewport.UPDATE_ALWAYS,
+		"prévias são renderizadas ao abrir")
+	screen._select("nina")
+	expect(screen._selected == "nina", "criança pode trocar a seleção")
+	expect(screen._checks["nina"].visible, "marca aparece no explorador escolhido")
+	expect(not screen._checks["teo"].visible, "marca antiga some")
+	var emitted := []
+	screen.changed.connect(func(look_id): emitted.append(look_id))
+	screen._on_confirm()
+	expect(emitted.size() == 1 and emitted[0] == "nina", "confirmar avisa o explorador escolhido")
+	screen.hide_screen()
+	expect(not screen.visible, "tela de escolha fecha")
+	expect(screen._previews[0]["viewport"].render_target_update_mode == SubViewport.UPDATE_DISABLED,
+		"prévias param de renderizar ao fechar")
+	screen.queue_free()
 	await get_tree().process_frame
 
 # ------------------------------------------------------------------ quiz

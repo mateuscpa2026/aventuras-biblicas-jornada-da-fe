@@ -11,8 +11,8 @@ var camera: Camera3D
 var pitch_pivot: Node3D
 var enabled := true
 var aiming := false
-var default_length := 4.8
-var target_length := 4.8
+var default_length := 4.2
+var target_length := 4.2
 var target_fov := 68.0
 var target_shoulder := 0.0
 

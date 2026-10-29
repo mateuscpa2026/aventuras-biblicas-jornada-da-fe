@@ -168,6 +168,20 @@ func _test_world(world_id: String) -> void:
 	else:
 		expect(npcs.size() >= 4, "moses: cena tem viajantes para escoltar (%d)" % npcs.size())
 
+	for animal in animals:
+		var rig: AnimalRig = animal.rig
+		if rig == null:
+			continue
+		expect(rig.built, "%s: %s tem corpo montado" % [world_id, animal.kind])
+		expect(rig.head != null, "%s: %s tem cabeça" % [world_id, animal.kind])
+		expect(rig.find_child("Eye", true, false) != null, "%s: %s tem olhos" % [world_id, animal.kind])
+		if animal.kind != "fish" and animal.kind != "bird":
+			expect(rig.legs.size() == 4, "%s: %s tem quatro patas" % [world_id, animal.kind])
+		expect(animal.animal_name != "" and animal.prompt_text != "",
+			"%s: %s tem nome e ação de cuidado" % [world_id, animal.kind])
+		if animal.can_follow:
+			expect(animal.interact_radius > 0.5, "%s: %s pode ser chamado" % [world_id, animal.kind])
+
 	var scrolls := _find(world, "scroll")
 	expect(scrolls.size() == 3, "%s: 3 pergaminhos na cena (%d)" % [world_id, scrolls.size()])
 	var collect_mission := ""

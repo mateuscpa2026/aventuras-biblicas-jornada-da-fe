@@ -7,10 +7,12 @@ signal continue_requested
 signal chapters_requested
 signal book_requested
 signal settings_requested
+signal explorer_requested
 signal quit_requested
 
 var _new_button: Button
 var _continue_button: Button
+var _explorer_button: Button
 var _progress_label: Label
 var _confirming := false
 var _confirm_timer := 0.0
@@ -50,7 +52,9 @@ func _build() -> void:
 
 	var badge_row := UIKit.hbox(10)
 	badge_row.add_child(UIKit.badge("UM JOGO PARA TODA A FAMÍLIA", Color("#ffe7b0"), Color("#7a4f12"), 12))
-	badge_row.add_child(UIKit.label("3D  ·  EDUCATIVO", 12, UIKit.MUTED, 700))
+	_explorer_button = _chip("Explorador: Téo")
+	_explorer_button.pressed.connect(_request.bind("explorer_requested"))
+	badge_row.add_child(_explorer_button)
 	content.add_child(badge_row)
 	content.add_child(UIKit.spacer(4))
 
@@ -104,7 +108,6 @@ func _build() -> void:
 	_progress_label = UIKit.label("", 13, UIKit.MUTED, 500, true)
 	content.add_child(_progress_label)
 	content.add_child(UIKit.stretch_spacer())
-	content.add_child(UIKit.label("Feito com Godot 4  ·  versão 1.0", 11, UIKit.MUTED, 500))
 
 	var tip := UIKit.panel(Color(0.11, 0.17, 0.13, 0.86), 22, 16, Color(0, 0, 0, 0))
 	tip.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
@@ -125,6 +128,41 @@ func _build() -> void:
 	tip_row.add_child(tip_text)
 	tip.add_child(tip_row)
 
+func _chip(text: String) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.focus_mode = Control.FOCUS_ALL
+	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	button.add_theme_font_override("font", UIKit.font(600))
+	button.add_theme_font_size_override("font_size", 12)
+	button.add_theme_color_override("font_color", Color("#7a4f12"))
+	button.add_theme_color_override("font_hover_color", UIKit.INK)
+	button.add_theme_color_override("font_pressed_color", UIKit.INK)
+	button.add_theme_color_override("font_focus_color", UIKit.INK)
+	var normal := _chip_style(Color("#ffe7b0"), Color(0, 0, 0, 0))
+	var hover := _chip_style(Color("#ffd98a"), Color(0, 0, 0, 0))
+	var pressed := _chip_style(Color("#f2c96f"), Color(0, 0, 0, 0))
+	var focus := _chip_style(Color(0, 0, 0, 0), UIKit.AMBER_DEEP)
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_stylebox_override("pressed", pressed)
+	button.add_theme_stylebox_override("focus", focus)
+	return button
+
+func _chip_style(bg: Color, border: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = bg
+	style.set_corner_radius_all(10)
+	style.content_margin_left = 10
+	style.content_margin_right = 10
+	style.content_margin_top = 3
+	style.content_margin_bottom = 3
+	if border.a > 0.0:
+		style.set_border_width_all(1)
+		style.border_color = border
+	return style
+
 func refresh() -> void:
 	var has_save := SaveSystem.has_save()
 	var last_world := SaveSystem.get_last_world()
@@ -134,6 +172,8 @@ func refresh() -> void:
 		_continue_button.text = "Continuar  ·  " + str(chapter.get("title", ""))
 	else:
 		_continue_button.text = "Continuar"
+	if _explorer_button:
+		_explorer_button.text = "Explorador: " + PlayerLooks.name_of(SaveSystem.get_player_look())
 	var completed: Array = SaveSystem.data.get("completed_chapters", [])
 	var stories := SaveSystem.get_storybook().size()
 	if has_save:
@@ -162,6 +202,8 @@ func _request(signal_name: String) -> void:
 			book_requested.emit()
 		"settings_requested":
 			settings_requested.emit()
+		"explorer_requested":
+			explorer_requested.emit()
 		"quit_requested":
 			quit_requested.emit()
 
@@ -175,7 +217,6 @@ func _on_new_game() -> void:
 	_confirming = false
 	_new_button.text = "Novo jogo"
 	new_game_requested.emit()
-
 func _on_continue() -> void:
 	Audio.play_sfx("click")
 	continue_requested.emit()
