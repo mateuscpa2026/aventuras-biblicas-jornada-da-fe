@@ -40,11 +40,11 @@ func _ready() -> void:
 	rotation.y = yaw
 	pitch_pivot.rotation.x = pitch
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if not enabled or get_tree().paused:
 		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		var sensitivity := Settings.mouse_sensitivity * 0.006
+		var sensitivity := Settings.mouse_sensitivity * 0.01
 		target_yaw -= event.relative.x * sensitivity
 		target_pitch = clampf(target_pitch - event.relative.y * sensitivity, deg_to_rad(-58.0), deg_to_rad(26.0))
 	elif event is InputEventMouseButton and event.pressed and not aiming:

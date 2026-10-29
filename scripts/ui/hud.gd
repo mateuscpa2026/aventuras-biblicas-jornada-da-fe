@@ -138,7 +138,7 @@ func _build() -> void:
 	hint.offset_bottom = -24
 	hint.offset_right = 24
 	add_child(hint)
-	hint.add_child(UIKit.label("WASD mover  ·  Shift correr  ·  Espaço pular  ·  E interagir", 13, UIKit.CREAM, 500))
+	hint.add_child(UIKit.label("WASD mover  ·  Mouse olhar  ·  Shift correr  ·  Espaço pular  ·  E interagir", 13, UIKit.CREAM, 500))
 
 	_carry_panel = UIKit.panel(Color(1, 0.99, 0.95, 0.98), 16, 10, Color("#e3d2ac"))
 	_carry_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)

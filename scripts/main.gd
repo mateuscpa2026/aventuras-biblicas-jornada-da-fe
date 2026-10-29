@@ -55,6 +55,7 @@ var _save_snapshot: Dictionary = {}
 func _ready() -> void:
 	Game.set_main(self)
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	get_window().focus_entered.connect(_on_window_focus)
 	_build_world_host()
 	_build_menu_stage()
 	_build_ui()
@@ -438,6 +439,10 @@ func _apply_mouse() -> void:
 	else:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
+func _on_window_focus() -> void:
+	if game_active and modal_stack.is_empty() and not _transitioning:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
 # ------------------------------------------------------------------ menus
 
 func _on_new_game() -> void:
@@ -597,6 +602,14 @@ func _on_complete_menu() -> void:
 	Game.go_to_menu()
 
 # ------------------------------------------------------------------ entrada
+
+func _input(event: InputEvent) -> void:
+	if _capture_mode:
+		return
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if game_active and modal_stack.is_empty() and not _transitioning \
+				and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+			_apply_mouse()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _capture_mode:
