@@ -204,6 +204,11 @@ static func _ground_normal() -> NoiseTexture2D:
 
 # ---------------------------------------------------------------- malhas
 
+## Peças pequenas de cenário não entram no mapa de sombras: corta metade dos draw calls.
+static func no_shadows(root: Node3D) -> void:
+	for child in root.find_children("*", "GeometryInstance3D", true, false):
+		(child as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
 static func sphere_mesh(radius := 1.0, segments := 12, rings := 6) -> SphereMesh:
 	var key := "s|%.3f|%d|%d" % [radius, segments, rings]
 	if _meshes.has(key):
@@ -556,6 +561,7 @@ static func bush(scale_factor := 1.0, color := Color("#4c8a4f")) -> Node3D:
 	add_merged(root, light, leaf_mat(color.lightened(0.12)), "BushLight")
 	add_merged(root, berries, mat(Color("#b85f45"), 0.55, 0.1), "Berries")
 	root.scale = Vector3.ONE * scale_factor
+	no_shadows(root)
 	return root
 
 static func flower_patch(color := Color("#f2b544"), scale_factor := 1.0) -> Node3D:
@@ -585,6 +591,7 @@ static func flower_patch(color := Color("#f2b544"), scale_factor := 1.0) -> Node
 	add_merged(root, petals, leaf_mat(color), "Petals")
 	add_merged(root, centers, mat(Color("#f7d35c"), 0.8, 0.1), "Centers")
 	root.scale = Vector3.ONE * scale_factor
+	no_shadows(root)
 	return root
 
 static func grass_tuft(scale_factor := 1.0, color := Color("#5d9b52")) -> Node3D:
@@ -601,6 +608,7 @@ static func grass_tuft(scale_factor := 1.0, color := Color("#5d9b52")) -> Node3D
 		blades.append([blade, segment_xf(start, end)])
 	add_merged(root, blades, leaf_mat(color), "Blades")
 	root.scale = Vector3.ONE * scale_factor
+	no_shadows(root)
 	return root
 
 static func rock(scale_factor := 1.0, color := Color("#8d8b83")) -> Node3D:
@@ -621,6 +629,7 @@ static func rock(scale_factor := 1.0, color := Color("#8d8b83")) -> Node3D:
 	add_merged(root, stone, stone_mat(color), "Stone")
 	add_merged(root, moss, leaf_mat(color.lerp(Color("#6f9450"), 0.6)), "Moss")
 	root.scale = Vector3.ONE * scale_factor
+	no_shadows(root)
 	collider_cylinder(root, 0.62, 0.8, Vector3(0, 0.4, 0))
 	return root
 

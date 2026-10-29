@@ -392,6 +392,18 @@ func _build_head() -> void:
 	_build_face()
 	_build_hair()
 	_build_headwear()
+	_optimize_head_shadows()
+
+## Só o volume da cabeça entra no mapa de sombras; detalhes do rosto ficariam
+## invisíveis a olho nu e custam dezenas de draw calls por personagem.
+func _optimize_head_shadows() -> void:
+	var keep := ["Skull", "Hair", "HairBackMass", "HairBack", "HairNape", "Headwear",
+		"Veil", "TurbanWrap", "Beard"]
+	for node in head.find_children("*", "MeshInstance3D", true, false):
+		var piece := node as MeshInstance3D
+		if str(piece.name) in keep:
+			continue
+		piece.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 func _build_face() -> void:
 	var lip_color := skin.darkened(0.16).lerp(Color("#a55f56"), 0.34)

@@ -22,7 +22,10 @@ espécie, olhos com esclera, íris, pupila e brilho, pálpebras, patas articulad
 cauda e animações de respiração, pastar e comemorar. Cada mundo tem um cinturão
 de mata no perímetro (árvores, pinheiros, palmeiras e arbustos com tons
 variados), manchas de vegetação rasteira e chão com textura e relevo suave, o
-que fecha o horizonte e dá profundidade à paisagem. Ao
+que fecha o horizonte e dá profundidade à paisagem. Tudo isso roda a **60 FPS**
+numa GPU de entrada (Radeon R5 340), graças a um único mapa de sombra ortogonal
+e à vegetação distante fora da projeção de sombra — os números e o que foi
+testado estão em [docs/TESTES.md](docs/TESTES.md). Ao
 chegar perto de alguém ou de um objeto, a ação aparece em um **botão flutuante
 com a tecla E** acima do personagem. A trilha sonora tem seis temas originais e
 sintetizados, cada um com 48 compassos em cinco seções (introdução, tema,

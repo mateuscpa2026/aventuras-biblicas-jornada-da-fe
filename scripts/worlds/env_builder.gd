@@ -46,6 +46,7 @@ static func setup(root: Node3D, cfg: Dictionary) -> Dictionary:
 	sun.light_angular_distance = 0.8
 	sun.sky_mode = DirectionalLight3D.SKY_MODE_LIGHT_ONLY
 	sun.shadow_enabled = Settings.shadow_enabled()
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	sun.directional_shadow_max_distance = Settings.shadow_max_distance()
 	sun.shadow_bias = 0.04
 	sun.shadow_normal_bias = 1.4
@@ -94,8 +95,9 @@ static func hills(root: Node3D, base_color: Color, count := 14, radius_min := 45
 		var sx := randf_range(10.0, 20.0)
 		var sy := randf_range(5.0, 12.0)
 		var sz := randf_range(10.0, 20.0)
-		Props.part(hill, Props.sphere_mesh(1.0, 12, 6), Props.mat(base_color.lightened(randf_range(-0.05, 0.08)), 1.0),
+		Props.part(hill, Props.sphere_mesh(1.0, 10, 5), Props.mat(base_color.lightened(randf_range(-0.05, 0.08)), 1.0),
 			Vector3.ZERO, Vector3(0, randf_range(0, 360), 0), Vector3(sx, sy, sz))
+		shadows_off(hill)
 		root.add_child(hill)
 
 static func clouds(root: Node3D, count := 8, height := 22.0) -> void:
@@ -152,6 +154,7 @@ static func forest(root: Node3D, count := 30, radius_min := 34.0, radius_max := 
 					piece = Props.tree(randf_range(0.95, 1.3), tint)
 		piece.position = Vector3(cos(angle) * distance, 0.0, sin(angle) * distance)
 		piece.rotation.y = randf_range(0.0, TAU)
+		shadows_off(piece)
 		root.add_child(piece)
 	for i in int(count * 0.55):
 		var angle := TAU * float(i) / float(count * 0.55) + randf_range(-0.22, 0.22)
@@ -162,19 +165,31 @@ static func forest(root: Node3D, count := 30, radius_min := 34.0, radius_max := 
 		var bush := Props.bush(randf_range(0.7, 1.1), leaf_color.darkened(randf_range(0.0, 0.1)))
 		bush.position = Vector3(cos(angle) * distance, 0.0, sin(angle) * distance)
 		bush.rotation.y = randf_range(0.0, TAU)
+		shadows_off(bush)
 		root.add_child(bush)
 
+## Cenário distante não entra no mapa de sombras: metade dos draw calls da mata.
+static func shadows_off(node: Node) -> void:
+	for child in node.find_children("*", "GeometryInstance3D", true, false):
+		(child as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
 ## Manchas de vegetação rasteira: quebram a planície e dão escala ao chão.
+## A lente fica 1 cm acima do chão (encostada, gerava z-fighting) e não nasce
+## perto do ponto de partida, onde pareceria um degrau aos pés do jogador.
 static func meadow(root: Node3D, color: Color, count := 44, radius := 26.0) -> void:
-	var sphere := Props.sphere_mesh(1.0, 10, 5)
-	var tones := [color.darkened(0.12), color.darkened(0.05), color.lightened(0.05)]
+	var disc := Props.sphere_mesh(1.0, 14, 8)
+	var tones := [color.darkened(0.1), color.darkened(0.04), color.lightened(0.02)]
+	var keep_clear := Vector2(0.0, 15.0)
 	var batches: Array = [[], [], []]
 	for i in count:
 		var angle := randf_range(0.0, TAU)
 		var distance := sqrt(randf()) * radius
-		var spot := Vector3(cos(angle) * distance, 0.012, sin(angle) * distance)
-		var size := randf_range(0.5, 1.4)
-		batches[i % 3].append([sphere, Props.xf(spot, Vector3(0, randf_range(0.0, 360.0), 0),
+		var spot := Vector3(cos(angle) * distance, 0.05, sin(angle) * distance)
+		if Vector2(spot.x, spot.z).distance_to(keep_clear) < 5.5:
+			continue
+		var size := randf_range(0.5, 1.1)
+		batches[i % 3].append([disc, Props.xf(spot, Vector3(0, randf_range(0.0, 360.0), 0),
 			Vector3(size, 0.04, size * randf_range(0.7, 1.15)))])
 	for i in 3:
-		Props.add_merged(root, batches[i], Props.ground_mat(tones[i]), "Meadow%d" % i)
+		var batch := Props.add_merged(root, batches[i], Props.ground_mat(tones[i]), "Meadow%d" % i)
+		batch.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

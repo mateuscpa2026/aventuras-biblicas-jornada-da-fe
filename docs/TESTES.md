@@ -171,12 +171,48 @@ então a pasta de captura é criada ao lado dele (por exemplo,
 
 ### Desempenho medido nesta máquina
 
-Com a janela cheia em 1366×768 (AMD Radeon R5 340, renderer GL Compatibility via
-ANGLE), as cinco cenas ficaram entre **39 e 43 FPS de média**, sem queda abaixo
-de 38 FPS durante 2,4 s de amostragem por mundo. Os números foram levantados por
-um sondador temporário (`tmp/probe/fps_probe`) que carrega cada mundo, fecha a
-introdução e lê `Performance.TIME_FPS`, `RENDER_TOTAL_DRAW_CALLS_IN_FRAME` e
-`RENDER_TOTAL_PRIMITIVES_IN_FRAME`; a sonda não faz parte da entrega.
+Com a janela cheia em 1366×768 (AMD Radeon R5 340 — GPU de entrada — renderer
+GL Compatibility via ANGLE) e vsync ligado, as cinco cenas rodam a **60 FPS**:
+
+| Mundo | Média | Mínima | Draw calls | Primitivas |
+| --- | ---: | ---: | ---: | ---: |
+| Éden | 59,9 | 59,0 | 2477 | 534 582 |
+| Arca | 60,0 | 59,0 | 2244 | 444 981 |
+| Davi | 60,0 | 60,0 | 2138 | 361 874 |
+| Moisés | 59,2 | 53,0 | 2234 | 366 248 |
+| Jesus | 59,8 | 58,0 | 2906 | 491 403 |
+
+Sem vsync (teto do motor, para medir folga) a média fica entre **62,6 e 83,5
+FPS**, então há margem acima do alvo mesmo no mundo mais pesado. O pico de 53
+em Moisés é um engasgo isolado da amostragem, não uma queda sustentada.
+
+O número de draw calls caiu de cerca de 3,4–5,2 mil para 2,1–2,9 mil depois do
+trabalho de otimização. Medido com uma sonda temporária (`tmp/probe/fps_probe`)
+que carrega cada mundo, fecha a introdução e lê `Performance.TIME_FPS`,
+`RENDER_TOTAL_DRAW_CALLS_IN_FRAME` e `RENDER_TOTAL_PRIMITIVES_IN_FRAME` por 2,4 s
+por mundo; a sonda não faz parte da entrega.
+
+O que rendeu o ganho (sem perder conteúdo visível):
+
+- **Sombras em um único mapa ortogonal** (`SHADOW_ORTHOGONAL`, textura 1024) em
+  vez de quatro mapas em cascata, e filtro de sombra macia no nível 1. O passe de
+  sombra era o que dominava os draw calls.
+- **Cenário sem projeção de sombra**: mata, montanhas, manchas de vegetação e
+  peças pequenas (arbustos, flores, tufos de grama, pedras) não entram no mapa de
+  sombras. Ao ar livre e com sol alto o ganho é invisível; o custo caía pela
+  metade.
+- **Detalhes do rosto fora do mapa de sombras**: em cada personagem só o volume
+  da cabeça (crânio, cabelo, chapéu) projeta sombra; cílios, olhos, nariz e boca
+  não. Jesus concentra a maioria dos NPCs e foi onde a mudança mais pesou.
+- **Distância de sombra curta** (34 m no perfil médio, 58 m no alto) e **MSAA
+  desligado** (o renderer GL Compatibility já entrega bordas suaves o bastante
+  para o estilo).
+- Manchas de vegetação viraram lentes rasas apoiadas 1 cm acima do chão: a versão
+  anterior encostava no plano e o z-fighting aparecia como faixas escuras.
+
+**O que foi testado e descartado:** reduzir a escala de renderização 3D
+(`viewport.scaling_3d_scale`) derrubou a taxa para 30–36 FPS neste renderer/GPU,
+o oposto do esperado, e foi removido; FXAA também não trouxe ganho.
 
 
 ## Verificação manual pendente

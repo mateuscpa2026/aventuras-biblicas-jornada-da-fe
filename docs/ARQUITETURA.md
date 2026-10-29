@@ -49,6 +49,14 @@ limites, o cinturão de mata do perímetro (`forest`, com variação de tom por
 vegetação rasteira (`meadow`); `props.gd` fornece todas as peças procedurais
 (árvores, rochas, tendas, mercado, arca, animais, partículas).
 
+Como o cenário é sempre igual (semente por mundo), o custo de render também é:
+`EnvBuilder.setup` usa um único mapa de sombra ortogonal de 1024 px e mantém a
+mata, as colinas e as peças pequenas fora dele (`shadows_off`/`Props.no_shadows`),
+e o rig dos personagens só projeta sombra do volume da cabeça
+(`_optimize_head_shadows`). Juntos, esses cortes levam as cinco cenas de ~40 para
+60 FPS na GPU de referência; a medição e o que foi descartado estão em
+[TESTES.md](TESTES.md).
+
 ### Interações
 
 Tudo que responde a `E` deriva de `Interactable`

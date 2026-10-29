@@ -95,7 +95,7 @@ func shadow_enabled() -> bool:
 	return quality >= 1
 
 func shadow_max_distance() -> float:
-	return [45.0, 70.0, 110.0][quality]
+	return [34.0, 34.0, 58.0][quality]
 
 func camera_far() -> float:
 	return [140.0, 220.0, 320.0][quality]
