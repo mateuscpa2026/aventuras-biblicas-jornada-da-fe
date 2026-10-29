@@ -17,6 +17,8 @@ var _mission_stat: Label
 var _reward_title: Label
 var _reward_text: Label
 var _next_button: Button
+var _card: PanelContainer
+var _scroll: ScrollContainer
 var _open := false
 
 func _ready() -> void:
@@ -25,31 +27,35 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build()
+	get_viewport().size_changed.connect(_fit)
 
 func _build() -> void:
 	UIKit.dim(self)
 	var center := CenterContainer.new()
 	UIKit.full_rect(center)
 	add_child(center)
-	var card := UIKit.panel(UIKit.CARD, 28, 30, Color("#e0cfa8"))
-	card.custom_minimum_size = Vector2(760, 0)
-	center.add_child(card)
-	var box := UIKit.vbox(11)
-	card.add_child(box)
+	_scroll = ScrollContainer.new()
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	center.add_child(_scroll)
+	_card = UIKit.panel(UIKit.CARD, 24, 22, Color("#e0cfa8"))
+	_card.custom_minimum_size = Vector2(720, 0)
+	_scroll.add_child(_card)
+	var box := UIKit.vbox(9)
+	_card.add_child(box)
 
 	var top_row := UIKit.hbox(10)
 	var badge := UIKit.badge("CAPÍTULO CONCLUÍDO", Color("#dcefdc"), Color("#2f5c3b"), 13)
 	top_row.add_child(badge)
 	_badge_label = badge.get_child(0) as Label
 	top_row.add_child(UIKit.stretch_spacer())
-	var stars := UIKit.label("✦  ✦  ✦", 20, UIKit.AMBER, 700)
+	var stars := UIKit.label("✦  ✦  ✦", 18, UIKit.AMBER, 700)
 	top_row.add_child(stars)
 	box.add_child(top_row)
 
-	_title = UIKit.label("", 38, UIKit.INK, 700, true)
+	_title = UIKit.label("", 32, UIKit.INK, 700, true)
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(_title)
-	_subtitle = UIKit.label("", 16, UIKit.MUTED, 500, true)
+	_subtitle = UIKit.label("", 15, UIKit.MUTED, 500, true)
 	_subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(_subtitle)
 	box.add_child(UIKit.divider(Color("#eadcbd"), 2))
@@ -66,21 +72,22 @@ func _build() -> void:
 	stats.add_child(world_box)
 	box.add_child(stats)
 
-	var learn := UIKit.panel(UIKit.PAPER, 18, 14)
-	var learn_box := UIKit.vbox(3)
+	var learn := UIKit.panel(UIKit.PAPER, 16, 12)
+	var learn_box := UIKit.vbox(2)
 	learn_box.add_child(UIKit.label("O QUE APRENDEMOS", 12, UIKit.AMBER_DEEP, 700))
-	_teaching = UIKit.label("", 17, UIKit.INK, 500, true)
+	_teaching = UIKit.label("", 16, UIKit.INK, 500, true)
 	learn_box.add_child(_teaching)
 	learn.add_child(learn_box)
 	box.add_child(learn)
 
-	var verse_card := UIKit.panel(Color("#f4f7e6"), 18, 14, Color("#dbe4c4"))
+	var verse_card := UIKit.panel(Color("#f4f7e6"), 16, 12, Color("#dbe4c4"))
 	var verse_row := UIKit.hbox(12)
-	var quote := UIKit.label("❝", 28, UIKit.GREEN_LIGHT, 700)
+	var quote := UIKit.label("❝", 26, UIKit.GREEN_LIGHT, 700)
 	quote.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	verse_row.add_child(quote)
 	var verse_box := UIKit.vbox(2)
-	_verse = UIKit.label("", 17, UIKit.INK, 500, true)
+	verse_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_verse = UIKit.label("", 16, UIKit.INK, 500, true)
 	verse_box.add_child(_verse)
 	_verse_ref = UIKit.label("", 12, UIKit.MUTED, 600)
 	verse_box.add_child(_verse_ref)
@@ -88,12 +95,13 @@ func _build() -> void:
 	verse_card.add_child(verse_row)
 	box.add_child(verse_card)
 
-	var reward := UIKit.panel(Color("#fff3d6"), 18, 12, Color("#f0dcaa"))
+	var reward := UIKit.panel(Color("#fff3d6"), 16, 10, Color("#f0dcaa"))
 	var reward_row := UIKit.hbox(12)
-	reward_row.add_child(UIKit.icon_circle("★", UIKit.AMBER, UIKit.INK, 40, 19))
+	reward_row.add_child(UIKit.icon_circle("★", UIKit.AMBER, UIKit.INK, 36, 17))
 	var reward_box := UIKit.vbox(1)
+	reward_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_reward_title = UIKit.label("NOVA JORNADA DESBLOQUEADA", 11, UIKit.AMBER_DEEP, 700)
-	_reward_text = UIKit.label("", 16, UIKit.INK, 600, true)
+	_reward_text = UIKit.label("", 15, UIKit.INK, 600, true)
 	reward_box.add_child(_reward_title)
 	reward_box.add_child(_reward_text)
 	reward_row.add_child(reward_box)
@@ -101,22 +109,29 @@ func _build() -> void:
 	box.add_child(reward)
 
 	var footer := UIKit.hbox(12)
-	var menu_button := UIKit.button("Mapa dos capítulos", "soft", 17)
-	menu_button.custom_minimum_size = Vector2(0, 48)
+	var menu_button := UIKit.button("Mapa dos capítulos", "soft", 16)
+	menu_button.custom_minimum_size = Vector2(0, 46)
 	menu_button.pressed.connect(_on_menu)
 	footer.add_child(menu_button)
-	_next_button = UIKit.button("Continuar jornada", "primary", 19)
-	_next_button.custom_minimum_size = Vector2(0, 48)
+	_next_button = UIKit.button("Continuar jornada", "primary", 18)
+	_next_button.custom_minimum_size = Vector2(0, 46)
 	_next_button.pressed.connect(_on_next)
 	footer.add_child(_next_button)
 	box.add_child(footer)
+	_fit()
+
+## Cartão maior que a janela vira área rolável; assim os botões nunca somem.
+func _fit() -> void:
+	var wanted := _card.get_combined_minimum_size().y
+	var limit := get_viewport_rect().size.y - 36.0
+	_scroll.custom_minimum_size = Vector2(0.0, minf(wanted, maxf(limit, 240.0)))
 
 func _stat_box(value: String, label_text: String, color: Color) -> PanelContainer:
-	var panel := UIKit.panel(UIKit.CREAM, 16, 10, Color("#eadcbd"))
-	panel.custom_minimum_size = Vector2(180, 0)
+	var panel := UIKit.panel(UIKit.CREAM, 14, 8, Color("#eadcbd"))
+	panel.custom_minimum_size = Vector2(168, 0)
 	var box := UIKit.vbox(0)
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
-	var value_label := UIKit.label(value, 22, color, 700)
+	var value_label := UIKit.label(value, 20, color, 700)
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(value_label)
 	var text_label := UIKit.label(label_text, 11, UIKit.MUTED, 600)
@@ -151,6 +166,8 @@ func show_chapter(chapter: Dictionary) -> void:
 		_reward_title.text = "NOVA JORNADA DESBLOQUEADA"
 		_reward_text.text = "%s  ·  %s" % [str(next.get("title", "")), str(next.get("subtitle", ""))]
 		_next_button.text = "Continuar jornada"
+	_scroll.scroll_vertical = 0
+	call_deferred("_fit")
 	modulate.a = 0.0
 	var tween := create_tween()
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)

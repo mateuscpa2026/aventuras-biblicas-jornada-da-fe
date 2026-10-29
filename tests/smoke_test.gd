@@ -17,6 +17,7 @@ func _ready() -> void:
 	await _test_player_looks()
 	await _test_story_cast()
 	await _test_intro_overlay()
+	await _test_chapter_complete()
 	await _test_camera_look()
 	await _test_toast_layer()
 	await _test_quiz_dialog()
@@ -412,6 +413,52 @@ func _test_intro_overlay() -> void:
 			disabled = false
 	expect(disabled, "retratos param de renderizar ao fechar")
 	overlay.queue_free()
+	await get_tree().process_frame
+
+# ------------------------------------------------------------------ conclusão do capítulo
+
+func _test_chapter_complete() -> void:
+	print("[test] --- conclusão do capítulo ---")
+	var screen := ChapterCompleteScreen.new()
+	add_child(screen)
+	await get_tree().process_frame
+	expect(not screen.visible, "tela de conclusão começa escondida")
+
+	var viewport_height := screen.get_viewport_rect().size.y
+	var signals: Array[String] = []
+	screen.next_requested.connect(func() -> void: signals.append("next"))
+	screen.menu_requested.connect(func() -> void: signals.append("menu"))
+
+	screen.show_chapter(Game.get_chapter("eden"))
+	await get_tree().process_frame
+	await get_tree().process_frame
+	expect(screen.visible, "tela de conclusão aparece ao concluir o capítulo")
+	var card_height := screen._card.get_combined_minimum_size().y
+	expect(card_height <= viewport_height - 16.0,
+		"cartão de conclusão cabe na tela de 720p (%.0f de %.0f px)" % [card_height, viewport_height])
+	expect(not screen._scroll.get_v_scroll_bar().visible, "cartão cabe sem precisar rolar")
+	var buttons := screen.find_children("*", "Button", true, false)
+	expect(buttons.size() == 2, "tela de conclusão tem dois botões no rodapé")
+	var inside := true
+	for button in buttons:
+		var bottom: float = (button as Button).get_global_rect().end.y
+		if bottom > viewport_height:
+			inside = false
+	expect(inside, "os dois botões aparecem inteiros dentro da tela")
+	expect(screen._next_button.text == "Continuar jornada", "botão aponta para o próximo capítulo")
+	screen._on_next()
+	expect(signals == ["next"], "botão continuar pede o próximo capítulo")
+
+	screen.show_chapter(Game.get_chapter("jesus"))
+	await get_tree().process_frame
+	await get_tree().process_frame
+	expect(screen.visible, "tela de conclusão reabre no último capítulo")
+	expect(screen._next_button.text == "Voltar ao início", "último capítulo volta ao início")
+	expect(screen._card.get_combined_minimum_size().y <= viewport_height - 16.0,
+		"último capítulo também cabe na tela (%.0f px)" % screen._card.get_combined_minimum_size().y)
+	screen._on_menu()
+	expect(signals == ["next", "menu"], "botão do mapa pede a lista de capítulos")
+	screen.queue_free()
 	await get_tree().process_frame
 
 # ------------------------------------------------------------------ câmera

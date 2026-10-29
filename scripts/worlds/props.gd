@@ -560,6 +560,7 @@ static func bush(scale_factor := 1.0, color := Color("#4c8a4f")) -> Node3D:
 	add_merged(root, base, leaf_mat(color), "Bush")
 	add_merged(root, light, leaf_mat(color.lightened(0.12)), "BushLight")
 	add_merged(root, berries, mat(Color("#b85f45"), 0.55, 0.1), "Berries")
+	collider_cylinder(root, 0.52, 0.85, Vector3(0, 0.42, 0))
 	root.scale = Vector3.ONE * scale_factor
 	no_shadows(root)
 	return root

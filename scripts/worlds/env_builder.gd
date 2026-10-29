@@ -97,6 +97,16 @@ static func hills(root: Node3D, base_color: Color, count := 14, radius_min := 45
 		var sz := randf_range(10.0, 20.0)
 		Props.part(hill, Props.sphere_mesh(1.0, 10, 5), Props.mat(base_color.lightened(randf_range(-0.05, 0.08)), 1.0),
 			Vector3.ZERO, Vector3(0, randf_range(0, 360), 0), Vector3(sx, sy, sz))
+		var body := StaticBody3D.new()
+		body.collision_layer = 1
+		body.collision_mask = 0
+		var shape_node := CollisionShape3D.new()
+		var cylinder := CylinderShape3D.new()
+		cylinder.radius = minf(sx, sz) * 0.85
+		cylinder.height = sy * 1.9
+		shape_node.shape = cylinder
+		body.add_child(shape_node)
+		hill.add_child(body)
 		shadows_off(hill)
 		root.add_child(hill)
 

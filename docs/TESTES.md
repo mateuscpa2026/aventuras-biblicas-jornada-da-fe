@@ -32,7 +32,7 @@ sai com código `1` (útil para CI).
 > inclinação e o zoom. Eles exercitam os nós reais das cenas chamando os métodos
 > de interação e os sistemas de missão, diálogo, save e quiz.
 
-## `smoke_test` — sistemas e dados (588 checagens)
+## `smoke_test` — sistemas e dados (600 checagens)
 
 Cobre:
 
@@ -80,6 +80,10 @@ Cobre:
 - **Abertura com retratos**: o `IntroOverlay` mostra dois `SubViewport` 3D por
   capítulo, renderiza enquanto está aberto, exibe os nomes corretos, troca o
   elenco ao mudar de capítulo, cabe em 720p e desliga a renderização ao fechar.
+- **Capítulo concluído**: o `ChapterCompleteScreen` quando aberto em 720p tem o
+  cartão inteiro dentro da tela (582 px no Éden, 610 px em Jesus), sem precisar
+  rolar, com os dois botões do rodapé visíveis; o botão principal pede o próximo
+  capítulo e no último (“Voltar ao início”) emite `menu_requested`.
 - **Câmera com mouse**: injeta `InputEventMouseMotion` e confere que a câmera
   gira na horizontal, inclina na vertical, respeita os limites de −58°/26°,
   ignora o mouse quando os controles estão desligados e aproxima com a roda.
@@ -91,7 +95,7 @@ Cobre:
 O teste salva uma cópia do save do jogador no início e restaura no final, então
 rodá-lo não apaga progresso real.
 
-## `world_test` — integração das cenas (391 checagens)
+## `world_test` — integração das cenas (411 checagens)
 
 Para cada um dos cinco mundos (`eden`, `ark`, `david`, `moses`, `jesus`),
 instancia a cena real e verifica:
@@ -101,6 +105,10 @@ instancia a cena real e verifica:
 - jogador existe, é o `Game.get_player()`, câmera tem alcance válido;
 - **colisão/gravidade**: posiciona o jogador 4 m acima do chão, espera cair e
   confere `is_on_floor()` e que ele não atravessou o cenário;
+- **vegetação e relevo sólidos**: conta os `StaticBody3D` de cada arbusto (18–26
+  por mundo) e de cada montanha (15–18), e lança um raio de 2 m acima de um
+  arbusto até 1 m abaixo do chão, conferindo que ele bate no colisor daquele
+  arbusto (rochas, árvores, pinheiros e palmeiras já eram sólidos);
 - pelo menos 6 objetos interativos e pelo menos 2 NPCs com diálogo e nome
   (Moisés usa 4 viajantes em vez de animais);
 - os personagens principais listados em `cast` existem como NPCs do mundo
@@ -132,8 +140,8 @@ Windows 10 x64):
 
 | Suíte | Checagens | Falhas | Saída |
 | --- | ---: | ---: | --- |
-| `smoke_test.tscn` | 588 | 0 | `0` |
-| `world_test.tscn` | 391 | 0 | `0` |
+| `smoke_test.tscn` | 600 | 0 | `0` |
+| `world_test.tscn` | 411 | 0 | `0` |
 
 ### Aviso esperado ao sair (headless)
 

@@ -92,6 +92,43 @@ func _find(root: Node, kind: String) -> Array:
 func _json(path: String):
 	return JSON.parse_string(FileAccess.get_file_as_string(path))
 
+func _count_bodies_under(root: Node, marker: String) -> int:
+	var total := 0
+	var stack: Array[Node] = [root]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		var parent := node.get_parent()
+		if node is StaticBody3D and parent != null and parent.get_node_or_null(marker) != null:
+			total += 1
+		stack.append_array(node.get_children())
+	return total
+
+func _count_hill_bodies(root: Node) -> int:
+	var total := 0
+	var stack: Array[Node] = [root]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		var parent := node.get_parent()
+		if node is StaticBody3D and parent != null and str(parent.name).begins_with("Hill"):
+			total += 1
+		stack.append_array(node.get_children())
+	return total
+
+func _first_bush(root: Node) -> Node3D:
+	var stack: Array[Node] = [root]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		if node is Node3D and node.get_node_or_null("BushLight") != null:
+			return node
+		stack.append_array(node.get_children())
+	return null
+
+func _bush_body(bush: Node) -> StaticBody3D:
+	for child in bush.get_children():
+		if child is StaticBody3D:
+			return child
+	return null
+
 func _final_mission_id(world_id: String) -> String:
 	var missions = _json("res://data/missions/%s.json" % world_id)
 	if typeof(missions) != TYPE_ARRAY:
@@ -135,6 +172,21 @@ func _test_world(world_id: String) -> void:
 		await _wait(1.4)
 		expect(player.is_on_floor(), "%s: jogador cai e pousa no chão" % world_id)
 		expect(player.global_position.y < start.y + 1.6, "%s: jogador não atravessa o cenário" % world_id)
+
+	var bush_bodies := _count_bodies_under(world, "BushLight")
+	expect(bush_bodies >= 6, "%s: arbustos têm colisores sólidos (%d)" % [world_id, bush_bodies])
+	var hill_bodies := _count_hill_bodies(world)
+	expect(hill_bodies >= 12, "%s: montanhas têm colisores sólidos (%d)" % [world_id, hill_bodies])
+	var bush := _first_bush(world)
+	expect(bush != null, "%s: cena tem vegetação para testar" % world_id)
+	if bush != null:
+		await get_tree().physics_frame
+		var from: Vector3 = bush.global_position + Vector3(0, 2.0, 0)
+		var to: Vector3 = bush.global_position + Vector3(0, -1.0, 0)
+		var hit := get_viewport().world_3d.direct_space_state.intersect_ray(
+			PhysicsRayQueryParameters3D.create(from, to))
+		expect(not hit.is_empty() and hit["collider"] == _bush_body(bush),
+			"%s: raio para cima do arbusto bate no colisor dele" % world_id)
 
 	var interactables := _find(world, "interactable")
 	expect(interactables.size() >= 6, "%s: cena tem objetos interativos (%d)" % [world_id, interactables.size()])
