@@ -8,8 +8,9 @@ quebra-cabeças de memória e salvamento local.
 Os personagens têm rosto, cabelo, barba, turbante, véu, joias e sandálias
 modelados por código, com roupas masculinas (túnica/manto) e femininas
 (vestido comprido, trança e véu) distintas. A criança escolhe quem vai guiar
-entre quatro exploradores originais — **Téo, Ada, Nina e Beni** — em uma tela
-com prévia 3D de cada um; a escolha fica salva e pode ser trocada no menu.
+entre quatro exploradores com nomes bíblicos — **Josué e Daniel** (meninos),
+**Ester e Sara** (meninas) — em uma tela com prévia 3D de cada um; a escolha
+fica salva e pode ser trocada no menu.
 Os animais (ovelha, cabra, burro, cervo, coelho, pássaro e peixe) também são
 modelados por código, com lã em camadas, focinho, olhos com brilho e pálpebras,
 patas articuladas, cauda e animações de respiração, pastar e comemorar. Ao
@@ -90,7 +91,7 @@ rejogados pelo menu **Capítulos**; os pergaminhos já guardados permanecem no
 ## Testes automatizados
 
 ```bash
-# 1) Sistemas, dados, missões, save, personagens, seleção e áudio (480 checagens)
+# 1) Sistemas, dados, missões, save, personagens, seleção e áudio (491 checagens)
 Godot_v4.7.2-stable_win64_console.exe --headless --path . res://tests/smoke_test.tscn
 
 # 2) Integração das cinco cenas: jogador, colisão, NPCs, animais, diálogo,
@@ -155,8 +156,9 @@ Documentação complementar:
 
 - Os cinco capítulos existem, são jogáveis e concluíveis; a progressão
   desbloqueia o capítulo seguinte e o save sobrevive a recarregar/corromper.
-- `480` checagens de sistemas + `381` checagens de cenas, **0 falhas**.
-- A criança escolhe entre quatro exploradores com prévia 3D; a escolha é
+- `491` checagens de sistemas + `381` checagens de cenas, **0 falhas**.
+- A criança escolhe entre quatro exploradores com nomes bíblicos — dois meninos
+  (Josué e Daniel) e duas meninas (Ester e Sara) — com prévia 3D; a escolha é
   persistida e aplicada em todos os mundos.
 - As seis trilhas foram refeitas com forma de 48 compassos e orquestração
   variada; cada faixa emenda em loop (descontinuidade ≤ 0,005) e o volume entre

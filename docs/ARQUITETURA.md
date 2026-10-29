@@ -169,9 +169,10 @@ tronco, cabeça e piscadas.
 
 ### Exploradores e seleção de personagem
 
-`scripts/player/player_looks.gd` define os quatro exploradores (Téo, Ada, Nina
-e Beni) como presets de `StylizedRig`: pele, cabelo, íris, túnica/vestido,
-barra, calça, sandália, faixa, gênero, penteado, adorno de cabeça e joias.
+`scripts/player/player_looks.gd` define os quatro exploradores com nomes
+bíblicos — Josué e Daniel (meninos), Ester e Sara (meninas) — como presets de
+`StylizedRig`: pele, cabelo, íris, túnica/vestido, barra, calça, sandália,
+faixa, gênero, penteado, adorno de cabeça e joias.
 `CharacterSelectScreen` (`scenes/ui/character_select.tscn`) instancia um
 `SubViewport` 400×400 transparente por explorador, cada um com seu próprio
 `World3D`, chão de estúdio e três luzes; os viewports só renderizam
@@ -180,7 +181,7 @@ prévia, nome, jeito e marca de seleção.
 
 A escolha é validada e persistida por `SaveSystem.player_look` (com sinal
 `player_look_changed`); `PlayerLooks.is_valid()` protege contra ids inválidos e
-o padrão é `teo`. O `PlayerCharacter` aplica o look salvo ao entrar em cada
+o padrão é `josue`. O `PlayerCharacter` aplica o look salvo ao entrar em cada
 mundo, e a tela pode ser aberta pelo menu a qualquer momento.
 
 ### Animais

@@ -2,12 +2,12 @@ class_name PlayerLooks
 ## Exploradores que a criança pode escolher para guiar a jornada.
 ## Cada visual usa o mesmo StylizedRig; nenhum recurso externo é necessário.
 
-const DEFAULT_ID := "teo"
+const DEFAULT_ID := "josue"
 
 const LOOKS := [
 	{
-		"id": "teo",
-		"name": "Téo",
+		"id": "josue",
+		"name": "Josué",
 		"tag": "Gosta de ajudar",
 		"colors": {
 			"skin": Color("#d9a273"),
@@ -25,8 +25,8 @@ const LOOKS := [
 		},
 	},
 	{
-		"id": "ada",
-		"name": "Ada",
+		"id": "ester",
+		"name": "Ester",
 		"tag": "Curiosa e corajosa",
 		"colors": {
 			"skin": Color("#eec39c"),
@@ -45,8 +45,8 @@ const LOOKS := [
 		},
 	},
 	{
-		"id": "nina",
-		"name": "Nina",
+		"id": "sara",
+		"name": "Sara",
 		"tag": "Alegre e atenta",
 		"colors": {
 			"skin": Color("#8d5b3c"),
@@ -65,8 +65,8 @@ const LOOKS := [
 		},
 	},
 	{
-		"id": "beni",
-		"name": "Beni",
+		"id": "daniel",
+		"name": "Daniel",
 		"tag": "Sempre pronto",
 		"colors": {
 			"skin": Color("#f0c9a5"),

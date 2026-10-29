@@ -52,7 +52,7 @@ func _build() -> void:
 
 	var badge_row := UIKit.hbox(10)
 	badge_row.add_child(UIKit.badge("UM JOGO PARA TODA A FAMÍLIA", Color("#ffe7b0"), Color("#7a4f12"), 12))
-	_explorer_button = _chip("Explorador: Téo")
+	_explorer_button = _chip("Explorador: " + PlayerLooks.name_of(PlayerLooks.DEFAULT_ID))
 	_explorer_button.pressed.connect(_request.bind("explorer_requested"))
 	badge_row.add_child(_explorer_button)
 	content.add_child(badge_row)

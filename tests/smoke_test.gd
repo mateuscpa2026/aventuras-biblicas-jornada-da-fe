@@ -255,9 +255,25 @@ func _test_player_looks() -> void:
 	for id in ids:
 		unique[id] = true
 	expect(unique.size() == ids.size(), "cada explorador tem identificador próprio")
-	expect(PlayerLooks.is_valid("teo") and not PlayerLooks.is_valid("ninguem"), "validação de explorador")
-	expect(PlayerLooks.is_valid("ada") and PlayerLooks.is_valid("nina") and PlayerLooks.is_valid("beni"),
-		"meninas e meninos podem ser escolhidos")
+	expect(PlayerLooks.is_valid(ids[0]) and not PlayerLooks.is_valid("ninguem"), "validação de explorador")
+	var boys := []
+	var girls := []
+	for id in ids:
+		var gender := str(PlayerLooks.colors(id).get("gender", ""))
+		expect(gender == "male" or gender == "female", "%s tem gênero definido" % id)
+		if gender == "male":
+			boys.append(id)
+		else:
+			girls.append(id)
+	expect(boys.size() == 2 and girls.size() == 2, "dois meninos e duas meninas para escolher")
+	var names := {}
+	for id in ids:
+		var display := PlayerLooks.name_of(id)
+		expect(display != "" and display != "Explorador", "%s tem nome bíblico" % id)
+		names[display] = true
+	expect(names.size() == 4, "os nomes bíblicos são diferentes entre si")
+	expect(names.has("Josué") and names.has("Daniel"), "os meninos têm nomes bíblicos")
+	expect(names.has("Ester") and names.has("Sara"), "as meninas têm nomes bíblicos")
 
 	for id in ids:
 		var colors := PlayerLooks.colors(id)
@@ -276,8 +292,8 @@ func _test_player_looks() -> void:
 		await get_tree().process_frame
 
 	var original := SaveSystem.get_player_look()
-	SaveSystem.set_player_look("ada")
-	expect(SaveSystem.get_player_look() == "ada", "escolha fica guardada no save")
+	SaveSystem.set_player_look(ids[1])
+	expect(SaveSystem.get_player_look() == ids[1], "escolha fica guardada no save")
 	SaveSystem.set_player_look("nao_existe")
 	expect(SaveSystem.get_player_look() == PlayerLooks.DEFAULT_ID, "explorador inválido volta ao padrão")
 	SaveSystem.set_player_look(original)
@@ -291,14 +307,14 @@ func _test_player_looks() -> void:
 	expect(screen._previews.size() == 4, "cada cartão tem prévia 3D própria")
 	expect(screen._previews[0]["viewport"].render_target_update_mode == SubViewport.UPDATE_ALWAYS,
 		"prévias são renderizadas ao abrir")
-	screen._select("nina")
-	expect(screen._selected == "nina", "criança pode trocar a seleção")
-	expect(screen._checks["nina"].visible, "marca aparece no explorador escolhido")
-	expect(not screen._checks["teo"].visible, "marca antiga some")
+	screen._select(ids[2])
+	expect(screen._selected == ids[2], "criança pode trocar a seleção")
+	expect(screen._checks[ids[2]].visible, "marca aparece no explorador escolhido")
+	expect(not screen._checks[ids[0]].visible, "marca antiga some")
 	var emitted := []
 	screen.changed.connect(func(look_id): emitted.append(look_id))
 	screen._on_confirm()
-	expect(emitted.size() == 1 and emitted[0] == "nina", "confirmar avisa o explorador escolhido")
+	expect(emitted.size() == 1 and emitted[0] == ids[2], "confirmar avisa o explorador escolhido")
 	screen.hide_screen()
 	expect(not screen.visible, "tela de escolha fecha")
 	expect(screen._previews[0]["viewport"].render_target_update_mode == SubViewport.UPDATE_DISABLED,

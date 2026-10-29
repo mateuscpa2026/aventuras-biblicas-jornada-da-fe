@@ -31,7 +31,7 @@ sai com código `1` (útil para CI).
 > Eles exercitam os nós reais das cenas chamando os métodos de interação e os
 > sistemas de missão, diálogo, save e quiz.
 
-## `smoke_test` — sistemas e dados (480 checagens)
+## `smoke_test` — sistemas e dados (491 checagens)
 
 Cobre:
 
@@ -67,7 +67,8 @@ Cobre:
   turbante tem voltas de tecido e barba. Nenhum homem recebe véu.
 - **Exploradores e seleção**: os quatro presets existem com ids únicos, são
   válidos, expõem todas as cores e montam o rig com gênero/roupa/penteado
-  corretos; `SaveSystem.player_look` grava, lê e cai no padrão diante de um id
+  corretos; há exatamente dois meninos e duas meninas, todos com nomes bíblicos
+  distintos (Josué, Daniel, Ester e Sara); `SaveSystem.player_look` grava, lê e cai no padrão diante de um id
   inválido; a `CharacterSelectScreen` cria quatro cartões e quatro prévias 3D,
   atualiza enquanto aberta, marca a escolha, emite `changed` ao confirmar e
   desliga a renderização ao fechar.
@@ -116,7 +117,7 @@ Windows 10 x64):
 
 | Suíte | Checagens | Falhas | Saída |
 | --- | ---: | ---: | --- |
-| `smoke_test.tscn` | 480 | 0 | `0` |
+| `smoke_test.tscn` | 491 | 0 | `0` |
 | `world_test.tscn` | 381 | 0 | `0` |
 
 ### Aviso esperado ao sair (headless)
