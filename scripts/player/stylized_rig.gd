@@ -109,6 +109,20 @@ func _build() -> void:
 	_build_arms()
 	_build_cloak()
 	_build_head()
+	_optimize_body_shadows()
+
+## A sombra do personagem vem dos volumes grandes (tronco, saia, braços, pernas,
+## cabeça e cabelo). Detalhes como costuras, botões e dedos não aparecem na
+## sombra e custariam centenas de draw calls por cena.
+func _optimize_body_shadows() -> void:
+	var keep := ["TorsoCloth", "OverTunic", "SkirtCloth", "Cloak", "CloakHem",
+		"CloakShoulder", "Shoulders", "Thigh", "Shin", "UpperArm", "Forearm",
+		"Foot", "Skull", "Hair", "HairBackMass", "HairBack", "HairNape",
+		"Headwear", "Veil", "TurbanWrap", "Beard"]
+	for node in find_children("*", "MeshInstance3D", true, false):
+		var piece := node as MeshInstance3D
+		piece.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON \
+			if str(piece.name) in keep else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 # ---------------------------------------------------------------- pernas
 

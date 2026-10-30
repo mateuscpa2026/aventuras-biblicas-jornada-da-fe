@@ -191,6 +191,16 @@ func _test_world(world_id: String) -> void:
 	var interactables := _find(world, "interactable")
 	expect(interactables.size() >= 6, "%s: cena tem objetos interativos (%d)" % [world_id, interactables.size()])
 
+	if world_id == "david":
+		var stands := world.find_children("*", "SlingshotStand", true, false)
+		expect(stands.size() >= 1, "david: barraca da funda disponível para treinar")
+		var rings := world.find_children("*", "TargetRing", true, false)
+		expect(rings.size() >= 3, "david: pelo menos 3 argolas no treino (%d)" % rings.size())
+		for ring_node in rings:
+			var ring := ring_node as TargetRing
+			expect(ring.required_mission == "david_alvos", "david: argola só pontua no desafio dos alvos")
+			expect(not ring.is_hit, "david: argola começa inteira")
+
 	var npcs := _find(world, "npc")
 	expect(npcs.size() >= 2, "%s: pelo menos 2 NPCs (%d)" % [world_id, npcs.size()])
 	var npc_ids := {}

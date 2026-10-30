@@ -32,7 +32,7 @@ sai com código `1` (útil para CI).
 > inclinação e o zoom. Eles exercitam os nós reais das cenas chamando os métodos
 > de interação e os sistemas de missão, diálogo, save e quiz.
 
-## `smoke_test` — sistemas e dados (600 checagens)
+## `smoke_test` — sistemas e dados (607 checagens)
 
 Cobre:
 
@@ -95,7 +95,7 @@ Cobre:
 O teste salva uma cópia do save do jogador no início e restaura no final, então
 rodá-lo não apaga progresso real.
 
-## `world_test` — integração das cenas (411 checagens)
+## `world_test` — integração das cenas (419 checagens)
 
 Para cada um dos cinco mundos (`eden`, `ark`, `david`, `moses`, `jesus`),
 instancia a cena real e verifica:

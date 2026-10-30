@@ -9,18 +9,21 @@ signal hit
 @export var required_mission := ""
 var is_hit := false
 var _visual: Node3D
+var _toast_clock := 0.0
 
 func _ready() -> void:
 	add_to_group("target_ring")
 	_visual = Props.target_ring(maxf(0.5, hit_radius - 0.15), ring_color)
 	add_child(_visual)
 
+func _process(delta: float) -> void:
+	_toast_clock = maxf(0.0, _toast_clock - delta)
+
 func hit_target() -> void:
 	if is_hit:
 		return
 	if required_mission != "" and not Missions.is_active(required_mission):
-		Audio.play_sfx("wrong", 0.9, 0.5)
-		Game.toast("Os alvos acordam quando o treino com Davi começar.", "✧")
+		_practice_throw()
 		return
 	is_hit = true
 	hit.emit()
@@ -32,6 +35,16 @@ func hit_target() -> void:
 	Missions.notify_event("target_hit", 1, {})
 	if Missions.is_active("david_alvos"):
 		Game.toast("Alvo acertado! Muito bem!", "✧")
+
+## Fora do desafio a argola não consome o acerto: só responde e ensina o porquê.
+func _practice_throw() -> void:
+	Audio.play_sfx("click", 1.1, 0.55)
+	var tween := create_tween()
+	tween.tween_property(_visual, "scale", Vector3.ONE * 1.12, 0.1)
+	tween.tween_property(_visual, "scale", Vector3.ONE, 0.2)
+	if _toast_clock <= 0.0:
+		_toast_clock = 6.0
+		Game.toast("Boa pontaria! Os alvos contam ponto quando o desafio do Davi começar.", "✧")
 
 func _set_all_materials(color: Color) -> void:
 	var material := Props.mat(color, 0.4, 0.35)

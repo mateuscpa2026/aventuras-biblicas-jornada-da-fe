@@ -51,7 +51,7 @@ func _build_environment() -> void:
 	})
 	set_environment(env["environment"] as WorldEnvironment, env["sun"] as DirectionalLight3D)
 	EnvBuilder.ground(self, Color("#d9b878"), 150.0)
-	EnvBuilder.hills(self, Color("#cfa96a"), 18, 46.0, 74.0)
+	EnvBuilder.hills(self, Color("#cfa96a"), 18, 46.0, 74.0, "palm")
 	EnvBuilder.clouds(self, 7, 23.0)
 
 func _build_scenery() -> void:
@@ -83,12 +83,10 @@ func _build_scenery() -> void:
 
 	# oásis de palmeiras no perímetro, deixando livre o caminho para o mar
 	EnvBuilder.forest(self, 30, 34.0, 47.0, Color("#8f9a56"), "desert", 270.0, 27.0)
-	EnvBuilder.meadow(self, Color("#c9a86a"), 40, 28.0)
-
-	# Caminho de pedras do acampamento em direção ao mar.
-	for i in 10:
-		Props.part(self, Props.box_mesh(Vector3(1.6, 0.06, 0.9)), Props.mat(Color("#c9ac7c"), 1.0),
-			Vector3(randf_range(-0.5, 0.5), 0.03, 4.0 - i * 2.4), Vector3(0, randf_range(-8, 8), 0))
+	EnvBuilder.ground_cover(self, Color("#a9a05e"), 420, 28.0, 0.14, 0.34)
+	EnvBuilder.ground_cover(self, Color("#a9a05e"), 220, 15.0, 0.08, 0.18)
+	EnvBuilder.path(self, [Vector3(0, 0, 11), Vector3(0, 0, 4), Vector3(0, 0, -2),
+		Vector3(0, 0, -12), Vector3(0, 0, -20)], 2.2, Color("#8b7653"), Color("#d9b878"))
 
 	add_prop(Props.signpost("Acampamento", Color("#d97b4b")), Vector3(3.4, 0, 14), Vector3(0, -16, 0))
 	add_prop(Props.signpost("Mar Vermelho", Color("#4f9fd0")), Vector3(4.2, 0, -14), Vector3(0, -12, 0))
@@ -180,11 +178,24 @@ func _build_collectibles() -> void:
 	add_quiz_station("moses_final", Vector3(-14, 0, 1), "Desafio extra: pedra da travessia")
 
 func _build_sea() -> void:
-	var water := Props.mat(Color("#4f9fd0"), 0.15, 0.1, 0.85)
-	Props.part(self, Props.box_mesh(Vector3(120, 0.08, 32)), water, Vector3(0, 0.05, -37))
+	var water := Props.mat(Color("#3f90c4"), 0.15, 0.1, 0.88)
+	Props.part(self, Props.box_mesh(Vector3(220, 0.08, 54)), water, Vector3(0, 0.06, -48))
 
-	_dry_path = Props.part(self, Props.box_mesh(Vector3(7.0, 0.14, 32)), Props.mat(Color("#d9b878"), 1.0),
-		Vector3(0, 0.1, -37))
+	# Margem de areia ondulada: sem ela a lâmina do mar terminava numa régua reta.
+	var shore: Array = []
+	var hump := Props.organic_mesh(1.0, 10, 7, 0.24, 2.0, 311)
+	var x := -48.0
+	while x <= 48.0:
+		if absf(x) > 4.8:
+			var height := randf_range(0.16, 0.3)
+			shore.append([hump, Props.xf(
+				Vector3(x + randf_range(-0.35, 0.35), height * 0.15, -21.6 + randf_range(-0.5, 0.5)),
+				Vector3.ZERO, Vector3(randf_range(1.3, 2.0), height, randf_range(0.9, 1.3)))])
+		x += randf_range(1.5, 2.2)
+	Props.add_merged(self, shore, Props.terrain_mat(Color("#cfae7c")), "ShoreBank")
+
+	_dry_path = Props.part(self, Props.box_mesh(Vector3(15.2, 0.14, 54)), Props.mat(Color("#d9b878"), 1.0),
+		Vector3(0, 0.1, -48))
 	_dry_path.visible = false
 
 	_sea_left = Node3D.new()

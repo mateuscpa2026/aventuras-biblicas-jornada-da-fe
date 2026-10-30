@@ -21,7 +21,7 @@ static func setup(root: Node3D, cfg: Dictionary) -> Dictionary:
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
 	env.ambient_light_color = cfg.get("ambient", Color("#d8e6d5"))
 	env.ambient_light_sky_contribution = 0.45
-	env.ambient_light_energy = float(cfg.get("ambient_energy", 0.65)) * 0.28
+	env.ambient_light_energy = float(cfg.get("ambient_energy", 0.65)) * 0.22
 	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
 	env.tonemap_white = 1.0
 	env.tonemap_exposure = float(cfg.get("exposure", 1.0)) * 0.95
@@ -42,7 +42,7 @@ static func setup(root: Node3D, cfg: Dictionary) -> Dictionary:
 	sun.name = "Sun"
 	sun.rotation_degrees = cfg.get("sun_rotation", Vector3(-52, -38, 0))
 	sun.light_color = cfg.get("sun_color", Color("#fff2d1"))
-	sun.light_energy = float(cfg.get("sun_energy", 1.15)) * 0.45
+	sun.light_energy = float(cfg.get("sun_energy", 1.15)) * 0.6
 	sun.light_angular_distance = 0.8
 	sun.sky_mode = DirectionalLight3D.SKY_MODE_LIGHT_ONLY
 	sun.shadow_enabled = Settings.shadow_enabled()
@@ -66,12 +66,43 @@ static func setup(root: Node3D, cfg: Dictionary) -> Dictionary:
 static func ground(root: Node3D, color: Color, size := 150.0) -> void:
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(size, size)
+	# Malha subdividida para pintar manchas de tom direto nos vértices: sem lentes
+	# sobrepostas, não há z-fighting nem sombras estranhas no meio do campo.
+	plane.subdivide_width = 72
+	plane.subdivide_depth = 72
+	var arrays := plane.get_mesh_arrays()
+	var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var colors := PackedColorArray()
+	colors.resize(verts.size())
+	var noise := FastNoiseLite.new()
+	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	noise.frequency = 0.03
+	noise.fractal_octaves = 4
+	noise.seed = 733
+	# duas escalas: mancha larga bem suave + granulado fino. Só a larga, com
+	# amplitude alta, virava polígonos escuros do tamanho de um campo de futebol.
+	var detail := FastNoiseLite.new()
+	detail.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	detail.frequency = 0.26
+	detail.fractal_octaves = 3
+	detail.seed = 917
+	for i in verts.size():
+		var point := verts[i]
+		var tone := 1.0 + noise.get_noise_2d(point.x, point.z) * 0.055 \
+			+ detail.get_noise_2d(point.x, point.z) * 0.07
+		colors[i] = Color(tone, tone, tone)
+	arrays[Mesh.ARRAY_COLOR] = colors
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	var material := Props.ground_mat(color)
-	plane.material = material
-	var mesh := MeshInstance3D.new()
-	mesh.name = "Ground"
-	mesh.mesh = plane
-	root.add_child(mesh)
+	mesh.surface_set_material(0, material)
+	var instance := MeshInstance3D.new()
+	instance.name = "Ground"
+	instance.mesh = mesh
+	# Um plano do tamanho do mundo dentro do mapa de sombra vira uma mancha escura
+	# gigante com bordas serrilhadas; o chão não precisa projetar sombra.
+	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	root.add_child(instance)
 
 	var body := StaticBody3D.new()
 	body.name = "GroundCollision"
@@ -85,7 +116,109 @@ static func ground(root: Node3D, color: Color, size := 150.0) -> void:
 	body.add_child(shape)
 	root.add_child(body)
 
-static func hills(root: Node3D, base_color: Color, count := 14, radius_min := 45.0, radius_max := 75.0) -> void:
+## Caminho de terra batida ligando os pontos do mundo, rente ao chão.
+## É uma fita única: tiles sobrepostos z-fightavam a distância e viravam faixas escuras.
+## As bordas recebem a cor do capim em vertex color, então a trilha se dissolve no
+## campo em vez de aparecer como uma placa reta sobre a grama.
+static func path(root: Node3D, points: Array, width := 1.6, color := Color("#8a7448"),
+		blend := Color("#6fae66")) -> void:
+	if points.size() < 2:
+		return
+	# estende 12 m para trás do primeiro ponto: a trilha nasce fora do quadro, em
+	# vez de aparecer como uma placa solta no meio do campo na frente do jogador
+	var extended: Array = [points[0]]
+	var back := (points[0] as Vector3 - points[1] as Vector3)
+	back.y = 0.0
+	if back.length() > 0.01:
+		extended = [(points[0] as Vector3) + back.normalized() * 12.0]
+	extended.append_array(points)
+	points = extended
+	var columns := [-1.0, -0.58, 0.0, 0.58, 1.0]
+	var tones := [blend, color.lerp(blend, 0.4), color, color.lerp(blend, 0.4), blend]
+	var verts := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var colors := PackedColorArray()
+	var indices := PackedInt32Array()
+	var run := 0.0
+	var total := 0.0
+	for i in points.size() - 1:
+		total += (points[i] as Vector3).distance_to(points[i + 1] as Vector3)
+	for i in points.size():
+		var here: Vector3 = points[i]
+		here.y = 0.0
+		var direction: Vector3
+		if i == 0:
+			direction = (points[1] as Vector3 - points[0] as Vector3)
+		elif i == points.size() - 1:
+			direction = (points[i] as Vector3 - points[i - 1] as Vector3)
+		else:
+			direction = (points[i + 1] as Vector3 - points[i - 1] as Vector3)
+		direction.y = 0.0
+		direction = direction.normalized()
+		var side := direction.cross(Vector3.UP).normalized()
+		# só a ponta oposta ao início afina: a trilha começa larga sob os pés do jogador
+		var tip := clampf((total - run) / 2.8, 0.3, 1.0)
+		# borda levemente ondulada em vez de régua: trilha pisada não tem lados retos
+		var wobble := sin(run * 0.85 + 1.3) * 0.14 + sin(run * 2.6 + 0.4) * 0.06
+		var half := width * 0.5 * tip * (1.0 + wobble)
+		for c in columns.size():
+			verts.append(here + side * half * float(columns[c]) + Vector3.UP * 0.03)
+			normals.append(Vector3.UP)
+			uvs.append(Vector2((float(columns[c]) + 1.0) * 0.5, run))
+			colors.append(tones[c])
+		if i < points.size() - 1:
+			var a := i * columns.size()
+			var b := (i + 1) * columns.size()
+			for c in columns.size() - 1:
+				# ordem horária vista de cima: no Godot essa é a face da frente.
+				# Invertida, a fita recebia luz pelo verso e saía preta.
+				indices.append_array([a + c, b + c, a + c + 1, a + c + 1, b + c, b + c + 1])
+			var next_point: Vector3 = points[i + 1]
+			next_point.y = 0.0
+			run += here.distance_to(next_point)
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_COLOR] = colors
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	mesh.surface_set_material(0, Props.path_mat(color))
+	var instance := MeshInstance3D.new()
+	instance.name = "Path"
+	instance.mesh = mesh
+	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	root.add_child(instance)
+
+## Capim espalhado em lote: um único mesh por tom, então sai barato.
+static func ground_cover(root: Node3D, color: Color, count := 120, radius := 26.0,
+		min_height := 0.16, max_height := 0.4) -> void:
+	var blade := Props.cylinder_mesh(0.0, 0.022, 1.0, 4)
+	var batches: Array = [[], [], []]
+	var keep_clear := Vector2(0.0, 15.0)
+	for i in count:
+		var angle := randf_range(0.0, TAU)
+		var distance := sqrt(randf()) * radius
+		var spot := Vector3(cos(angle) * distance, 0.0, sin(angle) * distance)
+		if Vector2(spot.x, spot.z).distance_to(keep_clear) < 3.5:
+			continue
+		var blades := randi_range(5, 8)
+		for b in blades:
+			var lean := randf_range(0.06, 0.2)
+			var heading := randf_range(0.0, TAU)
+			var height := randf_range(min_height, max_height)
+			var start := spot + Vector3(randf_range(-0.12, 0.12), 0.0, randf_range(-0.12, 0.12))
+			var end := start + Vector3(cos(heading) * lean, height, sin(heading) * lean)
+			batches[i % 3].append([blade, Props.segment_xf(start, end)])
+	for i in 3:
+		var batch := Props.add_merged(root, batches[i], Props.leaf_mat(color.lightened(-0.03 + i * 0.03)), "Cover%d" % i)
+		batch.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+static func hills(root: Node3D, base_color: Color, count := 14, radius_min := 45.0, radius_max := 75.0,
+		tree_style := "mixed") -> void:
 	for i in count:
 		var angle := TAU * float(i) / float(count) + randf_range(-0.12, 0.12)
 		var distance := randf_range(radius_min, radius_max)
@@ -95,8 +228,70 @@ static func hills(root: Node3D, base_color: Color, count := 14, radius_min := 45
 		var sx := randf_range(10.0, 20.0)
 		var sy := randf_range(5.0, 12.0)
 		var sz := randf_range(10.0, 20.0)
-		Props.part(hill, Props.sphere_mesh(1.0, 10, 5), Props.mat(base_color.lightened(randf_range(-0.05, 0.08)), 1.0),
+		var tone := base_color.lightened(randf_range(-0.07, 0.09))
+		Props.part(hill, Props.organic_mesh(1.0, 26, 16, 0.22, 1.5, 40 + i), Props.terrain_mat(tone),
 			Vector3.ZERO, Vector3(0, randf_range(0, 360), 0), Vector3(sx, sy, sz))
+		# pedras e árvores no pé da encosta quebram o contorno liso
+		var outcrop: Array = []
+		var rock_mesh := Props.organic_mesh(1.0, 10, 7, 0.34, 2.0, 90 + i)
+		for r in 3:
+			var rock_angle := randf_range(0.0, TAU)
+			var reach := randf_range(0.72, 0.92)
+			var size := randf_range(0.05, 0.1)
+			outcrop.append([rock_mesh, Props.xf(
+				Vector3(cos(rock_angle) * reach, randf_range(0.05, 0.16), sin(rock_angle) * reach),
+				Vector3(0, randf_range(0.0, 360.0), 0), Vector3(size, size * 0.8, size))])
+		var rocks := Props.add_merged(hill, outcrop, Props.stone_mat(base_color.darkened(0.18)), "Outcrops")
+		rocks.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		# Silhueta de mata na encosta: copas fundidas, 3 draw calls no morro.
+		var trunks: Array = []
+		var needles: Array = []
+		var leaves: Array = []
+		var cone := Props.cylinder_mesh(0.0, 1.0, 1.0, 7)
+		var crown := Props.sphere_mesh(1.0, 9, 6)
+		var frond := Props.box_mesh(Vector3(1.0, 0.02, 0.2))
+		var trunk_mesh := Props.cylinder_mesh(0.07, 0.1, 1.0, 5)
+		var trees := 0 if tree_style == "none" else randi_range(8, 14)
+		for t in trees:
+			var tree_angle := randf_range(0.0, TAU)
+			var reach := randf_range(0.42, 0.9)
+			var height_on_hill := sy * sqrt(maxf(0.0, 1.0 - reach * reach)) * 0.92
+			var spot := Vector3(cos(tree_angle) * reach * sx, height_on_hill - 0.4, sin(tree_angle) * reach * sz)
+			var tree_height := randf_range(3.2, 7.0)
+			var tree_width := tree_height * randf_range(0.3, 0.42)
+			trunks.append([trunk_mesh, Props.xf(spot + Vector3.UP * (tree_height * 0.2),
+				Vector3.ZERO, Vector3(1.0, tree_height * 0.45, 1.0))])
+			if tree_style == "palm":
+				var crown_spot := spot + Vector3.UP * (tree_height * 0.92)
+				for f in 7:
+					var yaw := TAU * float(f) / 7.0 + randf_range(-0.12, 0.12)
+					var reach_leaf := randf_range(1.1, 1.7)
+					leaves.append([frond, Props.xf(
+						crown_spot + Vector3(cos(yaw) * reach_leaf * 0.5, -0.18, sin(yaw) * reach_leaf * 0.5),
+						Vector3(0, -rad_to_deg(yaw), randf_range(-26.0, -14.0)),
+						Vector3(reach_leaf, 1.0, randf_range(0.8, 1.2)))])
+			elif randf() < 0.3:
+				# folhosa: duas copas arredondadas em vez do cone do pinheiro
+				leaves.append([crown, Props.xf(spot + Vector3.UP * (tree_height * 0.55),
+					Vector3.ZERO, Vector3(tree_width, tree_height * 0.34, tree_width))])
+				leaves.append([crown, Props.xf(spot + Vector3.UP * (tree_height * 0.76) +
+					Vector3(tree_width * 0.3, 0, tree_width * 0.2), Vector3.ZERO,
+					Vector3(tree_width * 0.66, tree_height * 0.24, tree_width * 0.66))])
+			else:
+				needles.append([cone, Props.xf(spot + Vector3.UP * (tree_height * 0.5),
+					Vector3.ZERO, Vector3(tree_width, tree_height * 0.7, tree_width))])
+				needles.append([cone, Props.xf(spot + Vector3.UP * (tree_height * 0.88),
+					Vector3.ZERO, Vector3(tree_width * 0.68, tree_height * 0.48, tree_width * 0.68))])
+		if not trunks.is_empty():
+			Props.add_merged(hill, trunks, Props.bark_mat(Color("#5d4630")), "HillTrunks")
+			if not needles.is_empty():
+				var needles_mesh := Props.add_merged(hill, needles,
+					Props.leaf_mat(base_color.lerp(Color("#3f6d42"), 0.62)), "HillPines")
+				needles_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			if not leaves.is_empty():
+				var leaves_mesh := Props.add_merged(hill, leaves,
+					Props.leaf_mat(base_color.lerp(Color("#4f8a3e"), 0.5)), "HillCrowns")
+				leaves_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		var body := StaticBody3D.new()
 		body.collision_layer = 1
 		body.collision_mask = 0
@@ -182,24 +377,3 @@ static func forest(root: Node3D, count := 30, radius_min := 34.0, radius_max := 
 static func shadows_off(node: Node) -> void:
 	for child in node.find_children("*", "GeometryInstance3D", true, false):
 		(child as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-
-## Manchas de vegetação rasteira: quebram a planície e dão escala ao chão.
-## A lente fica 1 cm acima do chão (encostada, gerava z-fighting) e não nasce
-## perto do ponto de partida, onde pareceria um degrau aos pés do jogador.
-static func meadow(root: Node3D, color: Color, count := 44, radius := 26.0) -> void:
-	var disc := Props.sphere_mesh(1.0, 14, 8)
-	var tones := [color.darkened(0.1), color.darkened(0.04), color.lightened(0.02)]
-	var keep_clear := Vector2(0.0, 15.0)
-	var batches: Array = [[], [], []]
-	for i in count:
-		var angle := randf_range(0.0, TAU)
-		var distance := sqrt(randf()) * radius
-		var spot := Vector3(cos(angle) * distance, 0.05, sin(angle) * distance)
-		if Vector2(spot.x, spot.z).distance_to(keep_clear) < 5.5:
-			continue
-		var size := randf_range(0.5, 1.1)
-		batches[i % 3].append([disc, Props.xf(spot, Vector3(0, randf_range(0.0, 360.0), 0),
-			Vector3(size, 0.04, size * randf_range(0.7, 1.15)))])
-	for i in 3:
-		var batch := Props.add_merged(root, batches[i], Props.ground_mat(tones[i]), "Meadow%d" % i)
-		batch.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

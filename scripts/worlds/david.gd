@@ -51,7 +51,12 @@ func _build_scenery() -> void:
 		add_prop(Props.bush(randf_range(0.6, 0.9), Color("#8b8c4c")), position)
 
 	EnvBuilder.forest(self, 26, 33.0, 45.0, Color("#7f9e52"), "dry")
-	EnvBuilder.meadow(self, Color("#a3944c"), 46, 27.0)
+	EnvBuilder.ground_cover(self, Color("#9c9450"), 620, 28.0, 0.2, 0.5)
+	EnvBuilder.ground_cover(self, Color("#9c9450"), 260, 15.0, 0.12, 0.26)
+	EnvBuilder.path(self, [Vector3(0, 0, 11), Vector3(0, 0, 5), Vector3(0, 0, -2),
+		Vector3(0, 0, -7)], 2.0, Color("#9c8559"), Color("#a3944c"))
+	EnvBuilder.path(self, [Vector3(-1, 0, 4), Vector3(-5, 0, 3), Vector3(-9, 0, 1),
+		Vector3(-11, 0, -2)], 1.3, Color("#9c8559"), Color("#a3944c"))
 
 	for i in 18:
 		add_prop(Props.grass_tuft(randf_range(0.9, 1.4), Color("#9c9450")),

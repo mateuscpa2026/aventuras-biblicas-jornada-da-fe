@@ -25,6 +25,7 @@ func _ready() -> void:
 	_test_persistence()
 	_test_reload_scroll_sync()
 	_test_corrupt_save()
+	await _test_sling()
 	_restore_save()
 	_stop_all_audio()
 	print("[test] === %d checagens, %d falhas ===" % [checks, failures])
@@ -673,6 +674,66 @@ func _run_world(world_id: String, steps: Array, scroll_stories: Array) -> void:
 	# Eventos duplicados depois da conclusão não devem alterar nada.
 	Missions.notify_event("care_animal", 5, {})
 	expect(Missions.is_world_done(), "%s permanece concluído após eventos extras" % world_id)
+
+# ------------------------------------------------------------------ funda
+
+func _test_sling() -> void:
+	print("[test] --- funda do Davi ---")
+	var from := Vector3(0, 1.4, 0)
+	for target in [Vector3(6, 1.3, 2), Vector3(11, 0.7, -3), Vector3(-8, 2.4, 5)]:
+		var velocity := Pebble.solve_arc(from, target, 27.0)
+		var miss := _sling_miss_distance(from, target, velocity)
+		expect(miss < 0.45, "arco da funda acerta o alvo (%s, erro %.2f m)" % [target, miss])
+
+	var practice := TargetRing.new()
+	practice.required_mission = "david_alvos_fora_do_desafio"
+	add_child(practice)
+	await get_tree().process_frame
+	practice.hit_target()
+	await get_tree().process_frame
+	expect(not practice.is_hit, "fora do desafio o alvo não gasta o acerto")
+
+	var counted := TargetRing.new()
+	add_child(counted)
+	await get_tree().process_frame
+	var hits := [0]
+	counted.hit.connect(func() -> void: hits[0] += 1)
+	counted.hit_target()
+	await get_tree().process_frame
+	expect(counted.is_hit and hits[0] == 1, "no desafio o alvo conta o acerto uma vez")
+	practice.queue_free()
+	counted.queue_free()
+	await get_tree().process_frame
+
+	var arena := Node3D.new()
+	add_child(arena)
+	var player := (load("res://scenes/player/player.tscn") as PackedScene).instantiate() as PlayerCharacter
+	arena.add_child(player)
+	await get_tree().process_frame
+	player.set_aiming(true)
+	expect(player.aiming, "a funda liga o modo de mira")
+	player.throw_pebble()
+	await get_tree().process_frame
+	var pebbles := 0
+	for child in arena.get_children():
+		if child is Pebble:
+			pebbles += 1
+	expect(pebbles == 1, "clicar na mira lança uma pedra")
+	arena.queue_free()
+	await get_tree().process_frame
+
+func _sling_miss_distance(from: Vector3, to: Vector3, velocity: Vector3) -> float:
+	var position := from
+	var speed := velocity
+	var step := 1.0 / 60.0
+	var best := position.distance_to(to)
+	for i in 400:
+		speed.y -= Pebble.GRAVITY * step
+		position += speed * step
+		best = minf(best, position.distance_to(to))
+		if position.y < -1.0:
+			break
+	return best
 
 # ------------------------------------------------------------------ persistência
 

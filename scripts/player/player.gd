@@ -13,6 +13,7 @@ const DECELERATION := 28.0
 const AIR_ACCELERATION := 9.0
 const JUMP_VELOCITY := 6.4
 const GRAVITY := 18.0
+const THROW_SPEED := 27.0
 
 var input_enabled := true
 var aiming := false
@@ -154,6 +155,15 @@ func _find_nearest() -> Interactable:
 			best_distance = distance
 	return best
 
+## O disparo acontece em `_input` para que nenhum elemento da HUD (a mira, por
+## exemplo) engula o clique antes de chegar ao jogador.
+func _input(event: InputEvent) -> void:
+	if not aiming or not input_enabled or get_tree().paused:
+		return
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		throw_pebble()
+		get_viewport().set_input_as_handled()
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not input_enabled or get_tree().paused:
 		return
@@ -162,10 +172,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			set_aiming(false)
 		elif selected and is_instance_valid(selected):
 			selected.interact(self)
-		return
-	if aiming and event is InputEventMouseButton and event.pressed \
-			and event.button_index == MOUSE_BUTTON_LEFT:
-		throw_pebble()
 
 func set_controlled(value: bool) -> void:
 	input_enabled = value
@@ -199,10 +205,32 @@ func play_interact_animation() -> void:
 func throw_pebble() -> void:
 	var camera: Camera3D = camera_rig.camera
 	var forward := -camera.global_transform.basis.z.normalized()
+	var start := camera.global_position + forward * 1.0
+	var aim := camera.global_position + forward * 45.0
+	# Ajuda de mira: se a mira está quase na argola, a pedra vai no centro dela.
+	var best_dot := 0.988
+	for node in get_tree().get_nodes_in_group("target_ring"):
+		var target := node as TargetRing
+		if target == null or target.is_hit:
+			continue
+		var offset := target.global_position - camera.global_position
+		var distance := offset.length()
+		if distance < 1.0:
+			continue
+		var alignment := forward.dot(offset / distance)
+		if alignment > best_dot:
+			best_dot = alignment
+			aim = target.global_position
+	if best_dot <= 0.988:
+		var query := PhysicsRayQueryParameters3D.create(camera.global_position, aim, 1)
+		query.exclude = [get_rid()]
+		var hit := get_world_3d().direct_space_state.intersect_ray(query)
+		if not hit.is_empty():
+			aim = hit["position"]
 	var pebble := Pebble.new()
 	get_parent().add_child(pebble)
-	pebble.global_position = camera.global_position + forward * 0.9
-	pebble.launch(forward * 30.0 + Vector3.UP * 1.4)
+	pebble.global_position = start
+	pebble.launch(Pebble.solve_arc(start, aim, THROW_SPEED))
 	Audio.play_sfx("throw", randf_range(0.9, 1.1))
 	rig.play_interact()
 

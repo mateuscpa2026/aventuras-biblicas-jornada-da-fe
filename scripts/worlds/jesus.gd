@@ -39,7 +39,7 @@ func _build_scenery() -> void:
 	var tree_spots := [
 		[Vector3(-18, 0, 6), 1.1], [Vector3(18, 0, 8), 1.05], [Vector3(-20, 0, 17), 1.0],
 		[Vector3(21, 0, 17), 1.15], [Vector3(12, 0, -6), 0.9], [Vector3(-12, 0, -6), 0.95],
-		[Vector3(0, 0, 20), 1.0],
+		[Vector3(11, 0, 24), 1.0],
 	]
 	for spot in tree_spots:
 		add_prop(Props.tree(float(spot[1]), Color("#6a9c55"), Color("#6b4a2e")),
@@ -56,7 +56,12 @@ func _build_scenery() -> void:
 		add_prop(Props.bush(randf_range(0.7, 1.0), Color("#5d8f52")), position)
 
 	EnvBuilder.forest(self, 32, 33.0, 45.0, Color("#6a9c55"), "mixed")
-	EnvBuilder.meadow(self, Color("#8fbd7d"), 44, 27.0)
+	EnvBuilder.ground_cover(self, Color("#79ab63"), 520, 27.0)
+	EnvBuilder.ground_cover(self, Color("#79ab63"), 250, 14.0, 0.09, 0.2)
+	EnvBuilder.path(self, [Vector3(0, 0, 11), Vector3(0, 0, 6), Vector3(0, 0, 2),
+		Vector3(0, 0, -1)], 2.2, Color("#9b825a"), Color("#8fbd7d"))
+	EnvBuilder.path(self, [Vector3(-8, 0, 12), Vector3(-2, 0, 10), Vector3(4, 0, 11)],
+		1.2, Color("#9b825a"), Color("#8fbd7d"))
 
 	var flower_colors := [Color("#e8846b"), Color("#f2b544"), Color("#d98fb8")]
 	for i in 12:
@@ -68,10 +73,6 @@ func _build_scenery() -> void:
 
 	for position in [Vector3(-21, 0, -5), Vector3(23, 0, 4), Vector3(-23, 0, 12), Vector3(7, 0, 19)]:
 		add_prop(Props.rock(randf_range(0.8, 1.2), Color("#9a978d")), position, Vector3(0, randf_range(0, 360), 0))
-
-	for i in 9:
-		Props.part(self, Props.box_mesh(Vector3(1.5, 0.07, 0.9)), Props.mat(Color("#e0d3ae"), 1.0),
-			Vector3(randf_range(-0.5, 0.5), 0.035, 13.0 - i * 1.6), Vector3(0, randf_range(-7, 7), 0))
 
 	add_prop(Props.signpost("Vila de Jesus", Color("#7f9fd4")), Vector3(3.4, 0, 12), Vector3(0, -16, 0))
 
@@ -89,31 +90,70 @@ func _build_village() -> void:
 	add_prop(Props.banner(Color("#7f9fd4")), Vector3(2.4, 0, 4))
 	add_prop(Props.banner(Color("#f2c14e")), Vector3(-2.4, 0, 4))
 
-	for i in 4:
-		var position := Vector3(-2, 0, 18) + Vector3(0, 0, -i * 1.2)
-		Props.part(self, Props.box_mesh(Vector3(2.2, 0.07, 1.0)), Props.mat(Color("#d9cba6"), 1.0),
-			position, Vector3(0, 0, 0))
-
 func _build_mount() -> void:
-	# Plataforma do monte e rampa caminhável.
-	var grass := Props.mat(Color("#7fae6a"), 1.0)
-	Props.part(self, Props.cylinder_mesh(7.0, 7.4, 2.0, 24), grass, Vector3(0, 1.0, -16))
-	Props.part(self, Props.cylinder_mesh(7.02, 7.02, 0.1, 24), Props.mat(Color("#8fbd7d"), 1.0), Vector3(0, 2.02, -16))
+	# Colina do sermão: barranco de grama e pedra em volta da mesa, e uma trilha
+	# de terra irregular subindo. Antes era um cilindro com uma tábua lisa por
+	# rampa — a silhueta reta era o que mais destoava do resto do mapa.
+	Props.part(self, Props.cylinder_mesh(6.9, 6.9, 2.0, 22), Props.terrain_mat(Color("#6f9a5f")),
+		Vector3(0, 1.0, -16))
+	Props.part(self, Props.cylinder_mesh(7.02, 7.02, 0.1, 26), Props.terrain_mat(Color("#8fbd7d")),
+		Vector3(0, 2.03, -16))
 	Props.collider_cylinder(self, 7.0, 2.0, Vector3(0, 1.0, -16))
 
-	Props.part(self, Props.box_mesh(Vector3(5.0, 0.35, 10.8)), Props.mat(Color("#a8946b"), 1.0),
-		Vector3(0, 1.0, -5.2), Vector3(10.9, 0, 0))
-	Props.collider_box(self, Vector3(5.0, 0.35, 10.8), Vector3(0, 1.0, -5.2), Vector3(10.9, 0, 0))
+	var lump := Props.organic_mesh(1.0, 11, 7, 0.2, 2.2, 401)
+	var bank: Array = []
+	for i in 18:
+		var angle := TAU * float(i) / 18.0 + 0.19
+		var radius := 6.5 + randf_range(-0.2, 0.3)
+		var height := randf_range(1.9, 2.4)
+		bank.append([lump, Props.xf(
+			Vector3(cos(angle) * radius, height * 0.5 - 0.08, -16.0 + sin(angle) * radius),
+			Vector3(0, randf_range(0, 360), 0),
+			Vector3(randf_range(1.2, 1.55), height * 0.5, randf_range(1.2, 1.55)))])
+	Props.add_merged(self, bank, Props.terrain_mat(Color("#7ba368")), "MountBank")
 
+	var foot: Array = []
+	for i in 9:
+		var angle := TAU * float(i) / 9.0 + 0.44
+		if absf(cos(angle)) < 0.3:
+			continue  # deixa livre a entrada da trilha na frente
+		foot.append([lump, Props.xf(
+			Vector3(cos(angle) * 7.7, 0.1, -16.0 + sin(angle) * 7.7),
+			Vector3(0, randf_range(0, 360), 0),
+			Vector3(randf_range(0.7, 1.15), randf_range(0.4, 0.7), randf_range(0.7, 1.15)))])
+	Props.add_merged(self, foot, Props.terrain_mat(Color("#93b47c")), "MountFoot")
+
+	# trilha de terra: lombadas irregulares sobre a rampa de colisão lisa
+	Props.collider_box(self, Vector3(5.0, 0.35, 10.8), Vector3(0, 0.98, -5.2), Vector3(10.9, 0, 0))
+	var trail: Array = []
+	for i in 15:
+		var t := float(i) / 14.0
+		var z := lerpf(0.9, -10.3, t)
+		var y := lerpf(0.02, 2.02, t)
+		trail.append([lump, Props.xf(
+			Vector3(randf_range(-0.18, 0.18), y - 0.1, z),
+			Vector3(0, randf_range(-18, 18), 0),
+			Vector3(randf_range(1.5, 1.9), 0.12, randf_range(0.75, 1.0)))])
+	Props.add_merged(self, trail, Props.terrain_mat(Color("#ac9468")), "MountTrail")
+
+	var edge: Array = []
 	for side in [-1, 1]:
-		Props.part(self, Props.box_mesh(Vector3(0.12, 0.7, 10.6)), Props.mat(Color("#7c4f32")),
-			Vector3(side * 2.55, 1.35, -5.2), Vector3(10.9, 0, 0))
-	for step in 5:
-		var t := float(step) / 4.0
-		var z := lerpf(0.0, -10.2, t)
-		var y := lerpf(0.1, 2.0, t)
-		Props.part(self, Props.sphere_mesh(0.28, 7, 4), Props.mat(Color("#9a978d")),
-			Vector3(2.7, y + 0.15, z), Vector3.ZERO, Vector3(1.2, 0.8, 1.0))
+		for i in 7:
+			var t := float(i) / 6.0
+			edge.append([lump, Props.xf(
+				Vector3(side * randf_range(2.55, 3.05), lerpf(0.06, 2.0, t) - 0.12,
+					lerpf(0.8, -10.2, t) + randf_range(-0.3, 0.3)),
+				Vector3(0, randf_range(0, 360), 0),
+				Vector3(randf_range(0.5, 0.85), randf_range(0.3, 0.55), randf_range(0.5, 0.85)))])
+	Props.add_merged(self, edge, Props.terrain_mat(Color("#7ba368")), "MountEdges")
+
+	for i in 9:
+		var angle := TAU * float(i) / 9.0 + 0.8
+		add_prop(Props.grass_tuft(randf_range(0.9, 1.4), Color("#86ab66")),
+			Vector3(cos(angle) * 6.4, 2.03, -16.0 + sin(angle) * 6.4))
+	for i in 5:
+		add_prop(Props.flower_patch([Color("#e8846b"), Color("#f2b544"), Color("#d98fb8")][i % 3], 0.9),
+			Vector3(randf_range(-5.6, 5.6), 2.03, -16.0 + randf_range(-5.6, 5.6)))
 
 	add_prop(Props.banner(Color("#7f9fd4")), Vector3(-3.2, 0, -1))
 	add_prop(Props.banner(Color("#f2c14e")), Vector3(3.2, 0, -1))

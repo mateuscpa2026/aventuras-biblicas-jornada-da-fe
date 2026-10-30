@@ -156,15 +156,53 @@ static func ground_mat(color: Color) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
 	m.albedo_color = color
 	# contraste baixo: evita o aspecto de "mármore" no chão grande
-	m.albedo_texture = _grain_texture("ground", 0.07, 301, 0.86, 1.0)
+	m.albedo_texture = _grain_texture("ground", 0.13, 301, 0.78, 1.02)
 	m.roughness = 1.0
 	m.metallic = 0.0
-	m.uv1_scale = Vector3(78.0, 78.0, 1.0)
+	m.uv1_scale = Vector3(40.0, 40.0, 1.0)
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	m.vertex_color_use_as_albedo = true
+	m.normal_enabled = true
+	m.normal_texture = _ground_normal()
+	m.normal_scale = 0.16
+	m.uv1_triplanar = false
+	_materials[key] = m
+	return m
+
+## Trilha de terra batida: fita rasa sobre o campo, com grão mais grosso que o chão.
+static func path_mat(color: Color) -> StandardMaterial3D:
+	var key := "path|%s" % color.to_html(true)
+	if _materials.has(key):
+		return _materials[key]
+	var m := StandardMaterial3D.new()
+	m.albedo_color = color
+	m.albedo_texture = _grain_texture("path", 0.09, 641, 0.84, 0.99)
+	m.roughness = 1.0
+	m.metallic = 0.0
+	m.uv1_scale = Vector3(4.0, 4.0, 1.0)
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	m.cull_mode = BaseMaterial3D.CULL_DISABLED
+	# As bordas da fita vêm com a cor do capim em vertex color: a trilha se
+	# dissolve no campo em vez de terminar numa aresta reta.
+	m.vertex_color_use_as_albedo = true
+	_materials[key] = m
+	return m
+
+## Material para encostas e morros: textura maior, para não repetir em tile.
+static func terrain_mat(color: Color) -> StandardMaterial3D:
+	var key := "terrain|%s" % color.to_html(true)
+	if _materials.has(key):
+		return _materials[key]
+	var m := StandardMaterial3D.new()
+	m.albedo_color = color
+	m.albedo_texture = _grain_texture("terrain", 0.03, 411, 0.88, 1.0)
+	m.roughness = 1.0
+	m.metallic = 0.0
+	m.uv1_scale = Vector3(6.0, 6.0, 1.0)
 	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	m.normal_enabled = true
 	m.normal_texture = _ground_normal()
-	m.normal_scale = 0.38
-	m.uv1_triplanar = false
+	m.normal_scale = 0.26
 	_materials[key] = m
 	return m
 
@@ -221,6 +259,37 @@ static func sphere_mesh(radius := 1.0, segments := 12, rings := 6) -> SphereMesh
 	_meshes[key] = m
 	return m
 
+## Esfera com a superfície ondulada por ruído: a silhueta deixa de ser um globo
+## perfeito e passa a lembrar copa, arbusto, pedra ou encosta. As normais
+## continuam suaves, então a luz desliza sem facetas.
+static func organic_mesh(radius := 1.0, segments := 14, rings := 9, amplitude := 0.18,
+		frequency := 2.0, noise_seed := 7) -> ArrayMesh:
+	var key := "o|%.3f|%d|%d|%.3f|%.2f|%d" % [radius, segments, rings, amplitude, frequency, noise_seed]
+	if _meshes.has(key):
+		return _meshes[key]
+	var base := sphere_mesh(radius, segments, rings)
+	var arrays := base.get_mesh_arrays()
+	var noise := FastNoiseLite.new()
+	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	noise.seed = noise_seed
+	noise.frequency = frequency
+	noise.fractal_octaves = 3
+	var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+	for i in verts.size():
+		var direction := verts[i].normalized()
+		if direction.length_squared() < 0.5:
+			continue
+		var bump := noise.get_noise_3dv(direction * frequency)
+		verts[i] = direction * radius * (1.0 + amplitude * bump)
+		normals[i] = direction
+	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	_meshes[key] = mesh
+	return mesh
+
 static func box_mesh(size: Vector3) -> BoxMesh:
 	var key := "b|%s" % str(size)
 	if _meshes.has(key):
@@ -268,6 +337,45 @@ static func torus_mesh(inner_radius: float, outer_radius: float, rings := 24, ri
 	return m
 
 # ---------------------------------------------------------------- helpers
+
+## Prisma triangular: fecha o frontão do telhado (sem ele o vão entre as duas
+## águas aparecia escuro de frente). Faces planas com normais próprias.
+static func prism_mesh(width: float, rise: float, depth: float) -> ArrayMesh:
+	var key := "prism|%.3f|%.3f|%.3f" % [width, rise, depth]
+	if _meshes.has(key):
+		return _meshes[key]
+	var hw := width * 0.5
+	var hd := depth * 0.5
+	var slope := Vector2(hw, rise).normalized()
+	var verts := PackedVector3Array()
+	var normals := PackedVector3Array()
+
+	var faces := [
+		[Vector3(0, 0, -1), [-hw, 0, -hd, hw, 0, -hd, 0, rise, -hd]],
+		[Vector3(0, 0, 1), [hw, 0, hd, -hw, 0, hd, 0, rise, hd]],
+		[Vector3(-slope.y, slope.x, 0),
+			[-hw, 0, -hd, 0, rise, -hd, 0, rise, hd, -hw, 0, -hd, 0, rise, hd, -hw, 0, hd]],
+		[Vector3(slope.y, slope.x, 0),
+			[hw, 0, -hd, 0, rise, -hd, 0, rise, hd, hw, 0, -hd, 0, rise, hd, hw, 0, hd]],
+		[Vector3(0, -1, 0),
+			[-hw, 0, -hd, hw, 0, hd, hw, 0, -hd, -hw, 0, -hd, -hw, 0, hd, hw, 0, hd]],
+	]
+	for face in faces:
+		var coords: Array = face[1]
+		var normal: Vector3 = face[0]
+		var i := 0
+		while i < coords.size():
+			verts.append(Vector3(coords[i], coords[i + 1], coords[i + 2]))
+			normals.append(normal)
+			i += 3
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	_meshes[key] = mesh
+	return mesh
 
 static func xf(position: Vector3, rotation_deg := Vector3.ZERO, scale := Vector3.ONE) -> Transform3D:
 	var basis := Basis.from_euler(Vector3(deg_to_rad(rotation_deg.x),
@@ -387,22 +495,25 @@ static func tree(scale_factor := 1.0, leaf_color := Color("#4f9a54"), trunk_colo
 		[Vector3(0.75, 4.7, -0.5), Vector3(0.75, 0.6, 0.7)],
 		[Vector3(-0.6, 4.65, 0.55), Vector3(0.7, 0.55, 0.65)],
 	]
-	var sphere := sphere_mesh(1.0, 12, 8)
+	var blobs := [
+		organic_mesh(1.0, 14, 9, 0.20, 2.2, 11),
+		organic_mesh(1.0, 14, 9, 0.24, 1.9, 23),
+		organic_mesh(1.0, 14, 9, 0.17, 2.5, 37),
+	]
+	# Tom pelo alto da copa: topo iluminado, base na sombra. Sem esse degradê a
+	# copa virava uma bola verde uniforme e chapada.
 	for i in crown.size():
 		var spot: Vector3 = crown[i][0]
 		var size: Vector3 = crown[i][1]
-		var target: Array = dark if i == 9 else base
-		if i == 0 or i == 10 or i == 11:
-			target = light
-		target.append([sphere, xf(spot, Vector3(randf_range(-8, 8), randf_range(0, 360),
-			randf_range(-8, 8)), size)])
+		_crown_batch(spot.y, light, base, dark).append([blobs[i % 3],
+			xf(spot, Vector3(randf_range(-8, 8), randf_range(0, 360), randf_range(-8, 8)), size)])
 	for i in 10:
 		var angle := TAU * float(i) / 10.0 + 0.25
 		var radius := randf_range(1.25, 1.7)
 		var spot := Vector3(cos(angle) * radius, randf_range(3.55, 4.35), sin(angle) * radius)
 		var puff := randf_range(0.3, 0.48)
-		var target: Array = light if i % 2 == 0 else dark
-		target.append([sphere, xf(spot, Vector3.ZERO, Vector3(puff, puff * 0.8, puff))])
+		_crown_batch(spot.y, light, base, dark).append([blobs[(i + 1) % 3],
+			xf(spot, Vector3.ZERO, Vector3(puff, puff * 0.8, puff))])
 	add_merged(root, dark, leaf_mat(leaf_color.darkened(0.14)), "LeavesDark")
 	add_merged(root, base, leaf_mat(leaf_color), "Leaves")
 	add_merged(root, light, leaf_mat(leaf_color.lightened(0.1)), "LeavesLight")
@@ -410,6 +521,16 @@ static func tree(scale_factor := 1.0, leaf_color := Color("#4f9a54"), trunk_colo
 	collider_cylinder(root, 0.34, 2.8, Vector3(0, 1.4, 0))
 	root.scale = Vector3.ONE * scale_factor
 	return root
+
+## Separa as bolhas da copa em três tons conforme a altura: topo claro, meio
+## neutro e base escura (luz que não chega no meio da folhagem).
+static func _crown_batch(height: float, light_array: Array, base_array: Array,
+		dark_array: Array) -> Array:
+	if height >= 4.35:
+		return light_array
+	if height <= 3.7:
+		return dark_array
+	return base_array
 
 static func pine(scale_factor := 1.0, leaf_color := Color("#3f7d55")) -> Node3D:
 	var root := Node3D.new()
@@ -533,7 +654,7 @@ static func bush(scale_factor := 1.0, color := Color("#4c8a4f")) -> Node3D:
 	var base: Array = []
 	var light: Array = []
 	var berries: Array = []
-	var sphere := sphere_mesh(1.0, 10, 6)
+	var sphere := organic_mesh(1.0, 12, 8, 0.24, 2.6, 5)
 	var spots := [
 		[Vector3(0, 0.42, 0), Vector3(0.66, 0.5, 0.6)],
 		[Vector3(0.42, 0.38, 0.18), Vector3(0.46, 0.4, 0.45)],
@@ -617,13 +738,14 @@ static func rock(scale_factor := 1.0, color := Color("#8d8b83")) -> Node3D:
 	root.name = "Rock"
 	var stone: Array = []
 	var moss: Array = []
-	var sphere := sphere_mesh(1.0, 9, 6)
+	var sphere := organic_mesh(1.0, 11, 7, 0.30, 1.8, 13)
+	var chunk := organic_mesh(1.0, 9, 6, 0.26, 2.4, 29)
 	stone.append([sphere, xf(Vector3(0, 0.34, 0), Vector3(randf_range(-8, 8), randf_range(0, 360), 0),
 		Vector3(0.95, 0.62, 0.8))])
 	for i in 4:
 		var angle := TAU * float(i) / 4.0 + 0.35
 		var size := randf_range(0.3, 0.46)
-		stone.append([sphere, xf(Vector3(cos(angle) * 0.5, size * 0.45, sin(angle) * 0.4),
+		stone.append([chunk, xf(Vector3(cos(angle) * 0.5, size * 0.45, sin(angle) * 0.4),
 			Vector3(randf_range(-12, 12), randf_range(0, 360), 0), Vector3(size, size * 0.65, size * 0.9))])
 	moss.append([sphere, xf(Vector3(-0.25, 0.58, 0.15), Vector3.ZERO, Vector3(0.42, 0.08, 0.34))])
 	moss.append([sphere, xf(Vector3(0.38, 0.3, 0.28), Vector3.ZERO, Vector3(0.22, 0.05, 0.2))])
@@ -652,22 +774,77 @@ static func house(width := 4.4, height := 2.7, depth := 3.8,
 		wall := Color("#f0dfba"), roof := Color("#b8644a")) -> Node3D:
 	var root := Node3D.new()
 	root.name = "House"
-	part(root, box_mesh(Vector3(width, height, depth)), mat(wall), Vector3(0, height * 0.5, 0))
+	var stone := Color("#9a978d")
+	var wood := Color("#7a5230")
+	var trim: Array = []
+	var details: Array = []
+	var post := box_mesh(Vector3(0.15, height, 0.15))
+	var beam := box_mesh(Vector3(width + 0.16, 0.15, depth + 0.16))
+	# alicerce de pedra: sem ele a casa parece uma caixa pousada na grama
+	part(root, box_mesh(Vector3(width + 0.3, 0.32, depth + 0.3)), mat(stone.darkened(0.04)),
+		Vector3(0, 0.16, 0))
+	part(root, box_mesh(Vector3(width, height, depth)), mat(wall), Vector3(0, 0.32 + height * 0.5, 0))
+	for x in [-1.0, 1.0]:
+		for z in [-1.0, 1.0]:
+			trim.append([post, xf(Vector3(x * (width * 0.5 - 0.01), 0.32 + height * 0.5,
+				z * (depth * 0.5 - 0.01)))])
+	trim.append([beam, xf(Vector3(0, 0.32 + height - 0.06, 0))])
+
 	var half_w := width * 0.5
 	var angle := 34.0
-	var slab_len := (half_w + 0.35) / cos(deg_to_rad(angle))
-	var roof_y := height + sin(deg_to_rad(angle)) * slab_len * 0.5 - 0.05
+	var overhang := 0.62
+	var run := half_w + overhang
+	var drop := tan(deg_to_rad(angle)) * run
+	var eave_y := 0.32 + height + 0.1
+	var ridge_y := eave_y + drop
+	var slope_len := run / cos(deg_to_rad(angle))
+	var ridge := box_mesh(Vector3(0.22, 0.18, depth + 1.12))
+	part(root, ridge, mat(roof.darkened(0.18)), Vector3(0, ridge_y, 0))
+	# frontão fechado nas duas pontas: sem ele o vão do telhado aparecia escuro
+	part(root, prism_mesh(run * 2.0, drop, depth), mat(wall, 0.95), Vector3(0, eave_y, 0))
+	var batten := box_mesh(Vector3(slope_len * 0.1, 0.05, depth + 1.12))
 	for side in [-1, 1]:
-		part(root, box_mesh(Vector3(slab_len, 0.16, depth + 0.6)), mat(roof),
-			Vector3(side * (half_w + 0.05) * 0.5, roof_y, 0), Vector3(0, 0, -side * angle))
-	var door := Vector3(width * 0.18, height * 0.42, 0.08)
-	part(root, box_mesh(door), mat(Color("#7a5230")), Vector3(0, door.y * 0.5, depth * 0.5 + 0.04))
+		part(root, box_mesh(Vector3(slope_len, 0.18, depth + 1.12)), mat(roof),
+			Vector3(side * run * 0.5, (eave_y + ridge_y) * 0.5, 0), Vector3(0, 0, -side * angle))
+		# ripas de telha: dão relevo ao telhado em vez de uma laje lisa
+		for i in 6:
+			var t := (float(i) + 0.5) / 6.0
+			details.append([batten, xf(Vector3(side * run * t, ridge_y - drop * t + 0.1, 0),
+				Vector3(0, 0, -side * angle))])
+	var door := Vector3(width * 0.2, height * 0.46, 0.09)
+	var door_y := 0.32 + door.y * 0.5
+	part(root, box_mesh(door), mat(Color("#7a5230")), Vector3(0, door_y, depth * 0.5 + 0.05))
+	trim.append([box_mesh(Vector3(door.x + 0.14, 0.12, 0.14)),
+		xf(Vector3(0, 0.32 + door.y + 0.04, depth * 0.5 + 0.06))])
+	for x in [-1.0, 1.0]:
+		trim.append([box_mesh(Vector3(0.1, door.y + 0.08, 0.14)),
+			xf(Vector3(x * (door.x * 0.5 + 0.05), door_y, depth * 0.5 + 0.06))])
+	# degrau de pedra
+	part(root, box_mesh(Vector3(1.1, 0.18, 0.5)), mat(stone), Vector3(0, 0.09, depth * 0.5 + 0.3))
 	for side in [-1, 1]:
-		part(root, box_mesh(Vector3(0.5, 0.55, 0.08)), mat(Color("#f7d98b"), 0.7, 0.35),
-			Vector3(side * width * 0.28, height * 0.6, depth * 0.5 + 0.04))
-		part(root, box_mesh(Vector3(0.62, 0.08, 0.16)), mat(Color("#8a5a3a")), Vector3(side * width * 0.28, height * 0.6 - 0.33, depth * 0.5 + 0.08))
-	part(root, box_mesh(Vector3(0.55, 1.2, 0.55)), mat(Color("#9c6a4b")), Vector3(width * 0.3, height + 1.0, -depth * 0.2))
-	collider_box(root, Vector3(width, height, depth), Vector3(0, height * 0.5, 0))
+		var wx: float = side * width * 0.28
+		var wy: float = 0.32 + height * 0.62
+		var wz: float = depth * 0.5 + 0.04
+		part(root, box_mesh(Vector3(0.48, 0.52, 0.08)), mat(Color("#f7d98b"), 0.7, 0.35),
+			Vector3(wx, wy, wz))
+		# moldura e venezianas abertas deixam a fachada menos "quadrada"
+		trim.append([box_mesh(Vector3(0.6, 0.07, 0.13)), xf(Vector3(wx, wy + 0.3, wz + 0.02))])
+		trim.append([box_mesh(Vector3(0.6, 0.07, 0.13)), xf(Vector3(wx, wy - 0.3, wz + 0.02))])
+		for edge in [-1.0, 1.0]:
+			trim.append([box_mesh(Vector3(0.07, 0.6, 0.13)),
+				xf(Vector3(wx + edge * 0.28, wy, wz + 0.02))])
+			details.append([box_mesh(Vector3(0.2, 0.54, 0.06)),
+				xf(Vector3(wx + edge * 0.48, wy, wz + 0.06), Vector3(0, edge * side * 26, 0))])
+		trim.append([box_mesh(Vector3(0.54, 0.08, 0.16)), xf(Vector3(wx, wy - 0.33, wz + 0.06))])
+	var trims := add_merged(root, trim, mat(wood), "HouseFrame")
+	var details_mesh := add_merged(root, details, mat(wood.darkened(0.16)), "HouseTrims")
+	# ripas e venezianas não mudam a sombra da casa e custam draw call no mapa de sombra
+	for small in [trims, details_mesh]:
+		small.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var chim_x := width * 0.22
+	part(root, box_mesh(Vector3(0.55, 1.2, 0.55)), mat(Color("#9c6a4b")),
+		Vector3(chim_x, ridge_y - drop * (chim_x / run) + 0.42, -depth * 0.2))
+	collider_box(root, Vector3(width, height, depth), Vector3(0, 0.32 + height * 0.5, 0))
 	return root
 
 static func tent(color := Color("#c9a06a"), pole_color := Color("#7a5230")) -> Node3D:
@@ -684,18 +861,49 @@ static func stall(a := Color("#d9694f"), b := Color("#f2e3c6")) -> Node3D:
 	var root := Node3D.new()
 	root.name = "Stall"
 	var wood := Color("#9c6a4b")
+	# postes finos e levemente inclinados: barraca armada à mão, não móvel de loja
 	for x in [-1.3, 1.3]:
 		for z in [-0.9, 0.9]:
-			part(root, box_mesh(Vector3(0.14, 2.4, 0.14)), mat(wood), Vector3(x, 1.2, z))
-	part(root, box_mesh(Vector3(3.0, 0.16, 1.8)), mat(Color("#b98a62")), Vector3(0, 1.0, 0))
-	for i in 8:
-		var color := a if i % 2 == 0 else b
-		part(root, box_mesh(Vector3(0.42, 0.08, 2.2)), mat(color),
-			Vector3(-1.54 + i * 0.44, 2.55, 0), Vector3(0, 0, 6))
+			part(root, box_mesh(Vector3(0.1, 2.35, 0.1)), mat(wood),
+				Vector3(x, 1.17, z), Vector3(z * -1.6, 0, x * 1.6))
+	# balcão de tábuas com saia de madeira na frente
+	part(root, box_mesh(Vector3(3.0, 0.14, 1.8)), mat(Color("#c0956a")), Vector3(0, 1.0, 0))
 	for i in 3:
-		part(root, sphere_mesh(0.12, 6, 4), mat([Color("#e8846b"), Color("#f2b544"), Color("#7fb069")][i]),
-			Vector3(-0.7 + i * 0.7, 1.18, 0.2))
-	part(root, box_mesh(Vector3(0.9, 0.5, 0.6)), mat(Color("#8a5a3a")), Vector3(1.0, 1.33, 0.1))
+		part(root, box_mesh(Vector3(2.94, 0.03, 1.72)), mat(Color("#a87c55")), Vector3(0, 1.08 + i * 0.013, 0))
+	part(root, box_mesh(Vector3(2.9, 0.62, 0.06)), mat(Color("#a87c55")), Vector3(0, 0.62, 0.88))
+	# toldo de pano: faixas em arco, cedendo no meio do vão
+	var canopy_a: Array = []
+	var canopy_b: Array = []
+	for i in 9:
+		var x := -1.56 + float(i) * 0.39
+		var sag := 0.1 * pow(x / 1.56, 2.0)
+		var tilt := rad_to_deg(atan(0.2 * x / 2.43))
+		var batch := canopy_a if i % 2 == 0 else canopy_b
+		batch.append([box_mesh(Vector3(0.41, 0.05, 2.45)),
+			xf(Vector3(x, 2.42 + sag, 0), Vector3(0, 0, tilt))])
+	# franja pendurada na frente do toldo
+	for i in 12:
+		var x := -1.62 + float(i) * 0.29
+		var sag := 0.1 * pow(x / 1.56, 2.0)
+		var batch := canopy_a if i % 2 == 0 else canopy_b
+		batch.append([box_mesh(Vector3(0.26, 0.22, 0.02)),
+			xf(Vector3(x, 2.3 + sag, 1.21), Vector3.ZERO,
+				Vector3(1.0, 1.0 + 0.3 * float(i % 2), 1.0))])
+	add_merged(root, canopy_a, mat(a, 0.95), "CanopyA")
+	add_merged(root, canopy_b, mat(b, 0.95), "CanopyB")
+	# mercadoria: pães, frutas e um jarro de barro
+	var bread := sphere_mesh(1.0, 9, 6)
+	var goods: Array = []
+	for i in 3:
+		goods.append([bread, xf(Vector3(-0.85 + i * 0.5, 1.14, 0.1), Vector3(0, 20 * i, 0), Vector3(0.17, 0.1, 0.22))])
+	var fruit := sphere_mesh(1.0, 8, 5)
+	for i in 5:
+		var row := float(i) / 3.0
+		var col := float(i % 3)
+		goods.append([fruit, xf(Vector3(0.55 + col * 0.22, 1.13 + row * 0.1, 0.28),
+			Vector3.ZERO, Vector3(0.085, 0.085, 0.085))])
+	add_merged(root, goods, mat(Color("#d9a866"), 0.85), "Goods")
+	part(root, cylinder_mesh(0.13, 0.17, 0.42, 10), mat(Color("#b3705a")), Vector3(1.0, 1.28, -0.15))
 	collider_box(root, Vector3(3.0, 1.1, 1.8), Vector3(0, 0.55, 0))
 	return root
 
@@ -765,8 +973,24 @@ static func banner(color := Color("#f2b544")) -> Node3D:
 static func hay() -> Node3D:
 	var root := Node3D.new()
 	root.name = "Hay"
-	part(root, cylinder_mesh(0.7, 0.75, 0.8, 10), mat(Color("#d9b45c")), Vector3(0, 0.45, 0), Vector3(0, 0, 90))
-	part(root, cylinder_mesh(0.7, 0.75, 0.8, 10), mat(Color("#e0bd68")), Vector3(0.4, 0.45, 0.2), Vector3(0, 20, 90))
+	var straw := mat(Color("#ccab6e"), 1.0)
+	var straw_light := mat(Color("#d7bc86"), 1.0)
+	part(root, cylinder_mesh(0.62, 0.68, 0.76, 12), straw,
+		Vector3(0, 0.42, 0), Vector3(0, 0, 90), Vector3(1.0, 1.0, 0.92))
+	part(root, cylinder_mesh(0.62, 0.68, 0.76, 12), straw_light,
+		Vector3(0.4, 0.42, 0.2), Vector3(0, 24, 90), Vector3(1.0, 1.0, 0.92))
+	# fios soltos nas pontas: sem eles o fardo é só um cilindro amarelo liso
+	var fibers: Array = []
+	var fiber := cylinder_mesh(0.014, 0.022, 1.0, 4)
+	for i in 30:
+		var side := -1.0 if i % 2 == 0 else 1.0
+		var angle := randf_range(0.0, TAU)
+		var r := randf_range(0.15, 0.6)
+		var base := Vector3(0.34 * side, 0.44 + cos(angle) * r * 0.9, sin(angle) * r * 0.92)
+		var tip := base + Vector3(side * randf_range(0.1, 0.22),
+			randf_range(-0.06, 0.1), randf_range(-0.12, 0.12))
+		fibers.append([fiber, segment_xf(base, tip)])
+	add_merged(root, fibers, straw_light, "Straw")
 	collider_cylinder(root, 0.6, 0.8, Vector3(0, 0.4, 0))
 	return root
 

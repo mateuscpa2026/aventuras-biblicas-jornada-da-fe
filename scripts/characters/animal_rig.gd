@@ -79,24 +79,30 @@ func _build_sheep() -> void:
 	var face: Color = palette.get("face", Color("#e7dcc9"))
 	var hoof := Color("#3b342e")
 	body = _node(Vector3(0, 0.72, 0))
-	Props.part(body, Props.sphere_mesh(0.44, 16, 9), Props.fur_mat(wool),
-		Vector3.ZERO, Vector3.ZERO, Vector3(1.26, 0.88, 1.02), "WoolBody")
+	Props.part(body, Props.organic_mesh(1.0, 16, 10, 0.2, 2.4, 61), Props.fur_mat(wool),
+		Vector3.ZERO, Vector3.ZERO, Vector3(0.56, 0.38, 0.45), "WoolBody")
 	Props.part(body, Props.sphere_mesh(0.32, 12, 7), Props.fur_mat(wool.darkened(0.03)),
-		Vector3(0, -0.1, 0.02), Vector3.ZERO, Vector3(1.24, 0.68, 1.0), "WoolBelly")
-	# tufos menores em três anéis cobrem o corpo como um velo contínuo
-	var rings := [[8, 0.26, 0.42, 0.36], [7, 0.41, 0.3, 0.26], [4, 0.52, 0.16, 0.14]]
-	var clump_index := 0
-	for ring in rings:
-		for i in int(ring[0]):
-			var a := TAU * float(i) / float(ring[0]) + float(clump_index) * 0.4
-			Props.part(body, Props.sphere_mesh(0.115 + 0.015 * (clump_index % 3), 8, 5),
-				Props.fur_mat(wool.lightened(0.03 if clump_index % 2 == 0 else -0.02)),
-				Vector3(sin(a) * float(ring[2]), float(ring[1]), cos(a) * float(ring[3])),
-				Vector3(0, rad_to_deg(a), 0), Vector3(1.15, 0.82, 1.05), "WoolCurl")
-			clump_index += 1
+		Vector3(0, -0.1, 0.02), Vector3.ZERO, Vector3(1.16, 0.62, 0.94), "WoolBelly")
+	# tufos distribuídos pela casca do velo (espiral de Fibonacci): o contorno
+	# fica irregular como lã de verdade, em vez de uma bola de pompons
+	var curl := Props.organic_mesh(1.0, 9, 6, 0.28, 2.8, 71)
+	var curls_light: Array = []
+	var curls_dark: Array = []
+	for i in 38:
+		var t := (float(i) + 0.5) / 38.0
+		var y := 1.0 - 2.0 * t
+		var ring := sqrt(maxf(0.0, 1.0 - y * y))
+		var angle := float(i) * 2.399963
+		var spot := Vector3(cos(angle) * ring * 0.53, y * 0.4, sin(angle) * ring * 0.44)
+		var size := 0.085 + 0.028 * float(i % 3)
+		var batch := curls_light if i % 3 != 0 else curls_dark
+		batch.append([curl, Props.xf(spot, Vector3(0, randf_range(0, 360), 0),
+			Vector3(size, size * 0.82, size))])
+	Props.add_merged(body, curls_light, Props.fur_mat(wool.lightened(0.04)), "WoolCurls")
+	Props.add_merged(body, curls_dark, Props.fur_mat(wool.darkened(0.05)), "WoolCurlsShade")
 	head = _node(Vector3(0, 0.92, -0.5))
 	var coat := face.darkened(0.06)
-	Props.part(head, Props.sphere_mesh(0.235, 18, 11), Props.fur_mat(coat),
+	Props.part(head, _blob(0.235, 0.04, 721, 18, 11), Props.fur_mat(coat),
 		Vector3.ZERO, Vector3.ZERO, Vector3(0.95, 1.0, 1.12), "Head")
 	Props.part(head, Props.sphere_mesh(0.138, 12, 7), Props.fur_mat(face.lightened(0.05)),
 		Vector3(0, -0.078, -0.205), Vector3.ZERO, Vector3(0.98, 0.76, 1.02), "Muzzle")
@@ -147,21 +153,21 @@ func _build_rabbit() -> void:
 	var fur: Color = palette.get("body", Color("#cdb894"))
 	var pink: Color = palette.get("ears", Color("#e3a19a"))
 	body = _node(Vector3(0, 0.45, 0))
-	Props.part(body, Props.sphere_mesh(0.33, 16, 9), Props.fur_mat(fur),
+	Props.part(body, _blob(0.33, 0.06, 611, 16, 10), Props.fur_mat(fur),
 		Vector3.ZERO, Vector3.ZERO, Vector3(1.0, 0.94, 1.24), "Body")
-	Props.part(body, Props.sphere_mesh(0.23, 12, 7), Props.fur_mat(fur.lightened(0.05)),
+	Props.part(body, _blob(0.23, 0.05, 613), Props.fur_mat(fur.lightened(0.05)),
 		Vector3(0, -0.06, -0.12), Vector3.ZERO, Vector3(1.0, 0.9, 1.0), "Chest")
 	Props.part(body, Props.sphere_mesh(0.17, 10, 6), Props.fur_mat(Color("#f4ead8")),
 		Vector3(0, -0.12, -0.1), Vector3.ZERO, Vector3(0.95, 0.8, 0.9), "Bib")
 	for side in [-1, 1]:
-		Props.part(body, Props.sphere_mesh(0.2, 10, 6), Props.fur_mat(fur.darkened(0.03)),
+		Props.part(body, _blob(0.2, 0.05, 617, 10, 6), Props.fur_mat(fur.darkened(0.03)),
 			Vector3(side * 0.21, -0.02, 0.18), Vector3.ZERO, Vector3(0.88, 1.05, 1.18), "Haunch")
 		Props.part(body, Props.sphere_mesh(0.085, 8, 5), Props.fur_mat(fur.lightened(0.08)),
 			Vector3(side * 0.2, -0.08, 0.3), Vector3.ZERO, Vector3(0.75, 0.55, 1.75), "HindFoot")
 		Props.part(body, Props.sphere_mesh(0.06, 7, 4), Props.fur_mat(fur),
 			Vector3(side * 0.12, -0.06, -0.26), Vector3.ZERO, Vector3(0.75, 0.55, 1.0), "Paw")
 	head = _node(Vector3(0, 0.75, -0.3))
-	Props.part(head, Props.sphere_mesh(0.225, 18, 11), Props.fur_mat(fur),
+	Props.part(head, _blob(0.225, 0.03, 621, 18, 11), Props.fur_mat(fur),
 		Vector3.ZERO, Vector3.ZERO, Vector3(1.0, 0.96, 1.08), "Head")
 	Props.part(head, Props.sphere_mesh(0.11, 9, 6), Props.fur_mat(Color("#f4ead8")),
 		Vector3(0, -0.075, -0.17), Vector3.ZERO, Vector3(1.05, 0.8, 1.0), "Muzzle")
@@ -209,13 +215,13 @@ func _build_deer() -> void:
 	var hoof := Color("#3e332a")
 	var antler_color := Color("#d8c19a")
 	body = _node(Vector3(0, 0.92, 0))
-	Props.part(body, Props.sphere_mesh(0.4, 16, 9), Props.fur_mat(fur),
+	Props.part(body, _blob(0.4, 0.075, 311, 16, 10), Props.fur_mat(fur),
 		Vector3.ZERO, Vector3.ZERO, Vector3(1.24, 0.88, 1.0), "Body")
-	Props.part(body, Props.sphere_mesh(0.3, 12, 7), Props.fur_mat(fur.lightened(0.04)),
+	Props.part(body, _blob(0.3, 0.06, 313), Props.fur_mat(fur.lightened(0.04)),
 		Vector3(0, 0.02, -0.26), Vector3.ZERO, Vector3(1.0, 1.0, 0.9), "Chest")
-	Props.part(body, Props.sphere_mesh(0.3, 12, 7), Props.fur_mat(fur.darkened(0.03)),
+	Props.part(body, _blob(0.3, 0.06, 317), Props.fur_mat(fur.darkened(0.03)),
 		Vector3(0, 0.01, 0.24), Vector3.ZERO, Vector3(1.0, 1.02, 0.95), "Haunch")
-	Props.part(body, Props.sphere_mesh(0.24, 12, 7), Props.fur_mat(Color("#e9d7b8")),
+	Props.part(body, _blob(0.24, 0.05, 319), Props.fur_mat(Color("#e9d7b8")),
 		Vector3(0, -0.26, 0.0), Vector3.ZERO, Vector3(1.2, 0.42, 0.95), "Belly")
 	for i in 6:
 		Props.part(body, Props.sphere_mesh(0.035, 7, 4), Props.mat(cream, 0.95),
@@ -224,7 +230,7 @@ func _build_deer() -> void:
 	Props.part(self, Props.cylinder_mesh(0.13, 0.17, 0.46, 10), Props.fur_mat(fur),
 		Vector3(0, 1.14, -0.3), Vector3(22, 0, 0), Vector3.ONE, "Neck")
 	head = _node(Vector3(0, 1.37, -0.46))
-	Props.part(head, Props.sphere_mesh(0.235, 18, 11), Props.fur_mat(fur),
+	Props.part(head, _blob(0.235, 0.035, 321, 18, 11), Props.fur_mat(fur),
 		Vector3.ZERO, Vector3.ZERO, Vector3(0.92, 0.96, 1.18), "Head")
 	Props.part(head, Props.sphere_mesh(0.145, 9, 6), Props.fur_mat(fur.lightened(0.05)),
 		Vector3(0, -0.07, -0.21), Vector3.ZERO, Vector3(0.9, 0.8, 1.05), "Muzzle")
@@ -278,7 +284,7 @@ func _build_bird() -> void:
 	var belly: Color = palette.get("belly", feather.lightened(0.25))
 	var wing_color := feather.darkened(0.1)
 	body = _node(Vector3(0, 0.34, 0))
-	Props.part(body, Props.sphere_mesh(0.2, 18, 11), Props.fur_mat(feather),
+	Props.part(body, _blob(0.2, 0.035, 711, 16, 10), Props.fur_mat(feather),
 		Vector3.ZERO, Vector3.ZERO, Vector3(1.0, 0.92, 1.3), "Body")
 	Props.part(body, Props.sphere_mesh(0.14, 10, 6), Props.fur_mat(belly),
 		Vector3(0, -0.05, -0.1), Vector3.ZERO, Vector3(0.9, 0.9, 1.0), "Breast")
@@ -329,18 +335,18 @@ func _build_donkey() -> void:
 	var mane := fur.darkened(0.3)
 	var hoof := Color("#3a332c")
 	body = _node(Vector3(0, 0.95, 0))
-	Props.part(body, Props.sphere_mesh(0.45, 16, 9), Props.fur_mat(fur),
+	Props.part(body, _blob(0.45, 0.08, 411, 16, 10), Props.fur_mat(fur),
 		Vector3.ZERO, Vector3.ZERO, Vector3(1.32, 0.9, 1.0), "Body")
-	Props.part(body, Props.sphere_mesh(0.32, 12, 7), Props.fur_mat(fur.lightened(0.03)),
+	Props.part(body, _blob(0.32, 0.06, 413), Props.fur_mat(fur.lightened(0.03)),
 		Vector3(0, 0.02, -0.28), Vector3.ZERO, Vector3(1.0, 1.0, 0.9), "Chest")
-	Props.part(body, Props.sphere_mesh(0.31, 12, 7), Props.fur_mat(fur.darkened(0.02)),
+	Props.part(body, _blob(0.31, 0.06, 417), Props.fur_mat(fur.darkened(0.02)),
 		Vector3(0, 0.02, 0.26), Vector3.ZERO, Vector3(1.0, 1.0, 0.9), "Haunch")
-	Props.part(body, Props.sphere_mesh(0.25, 12, 7), Props.fur_mat(fur.lightened(0.08)),
+	Props.part(body, _blob(0.25, 0.05, 419), Props.fur_mat(fur.lightened(0.08)),
 		Vector3(0, -0.27, -0.05), Vector3.ZERO, Vector3(1.1, 0.4, 1.0), "Belly")
 	Props.part(self, Props.cylinder_mesh(0.13, 0.17, 0.55, 10), Props.fur_mat(fur),
 		Vector3(0, 1.28, -0.38), Vector3(18, 0, 0), Vector3.ONE, "Neck")
 	head = _node(Vector3(0, 1.5, -0.56))
-	Props.part(head, Props.sphere_mesh(0.22, 18, 11), Props.fur_mat(fur),
+	Props.part(head, _blob(0.22, 0.035, 421, 18, 11), Props.fur_mat(fur),
 		Vector3.ZERO, Vector3.ZERO, Vector3(0.88, 1.0, 1.2), "Head")
 	Props.part(head, Props.sphere_mesh(0.15, 18, 11), Props.fur_mat(fur.lightened(0.03)),
 		Vector3(0, -0.1, -0.235), Vector3(-8, 0, 0), Vector3(0.74, 0.7, 1.2), "Muzzle")
@@ -400,16 +406,16 @@ func _build_goat() -> void:
 	var horn := Color("#bda684")
 	var hoof := Color("#4a4038")
 	body = _node(Vector3(0, 0.76, 0))
-	Props.part(body, Props.sphere_mesh(0.37, 16, 9), Props.fur_mat(fur),
+	Props.part(body, _blob(0.37, 0.07, 511, 16, 10), Props.fur_mat(fur),
 		Vector3.ZERO, Vector3.ZERO, Vector3(1.3, 0.95, 0.95), "Body")
-	Props.part(body, Props.sphere_mesh(0.26, 12, 7), Props.fur_mat(fur.lightened(0.05)),
+	Props.part(body, _blob(0.26, 0.05, 513), Props.fur_mat(fur.lightened(0.05)),
 		Vector3(0, 0.02, -0.24), Vector3.ZERO, Vector3(1.0, 1.0, 0.9), "Chest")
-	Props.part(body, Props.sphere_mesh(0.24, 12, 7), Props.fur_mat(fur.darkened(0.03)),
+	Props.part(body, _blob(0.24, 0.05, 517), Props.fur_mat(fur.darkened(0.03)),
 		Vector3(0, -0.25, 0.0), Vector3.ZERO, Vector3(1.05, 0.45, 0.95), "Belly")
 	Props.part(self, Props.cylinder_mesh(0.1, 0.13, 0.34, 9), Props.fur_mat(fur),
 		Vector3(0, 1.0, -0.3), Vector3(22, 0, 0), Vector3.ONE, "Neck")
 	head = _node(Vector3(0, 1.16, -0.46))
-	Props.part(head, Props.sphere_mesh(0.2, 18, 11), Props.fur_mat(fur),
+	Props.part(head, _blob(0.2, 0.032, 521, 18, 11), Props.fur_mat(fur),
 		Vector3.ZERO, Vector3.ZERO, Vector3(0.9, 1.0, 1.15), "Head")
 	Props.part(head, Props.sphere_mesh(0.12, 9, 6), Props.fur_mat(fur.lightened(0.04)),
 		Vector3(0, -0.07, -0.19), Vector3.ZERO, Vector3(0.9, 0.8, 1.1), "Muzzle")
@@ -467,7 +473,7 @@ func _build_fish() -> void:
 	var belly := scale_color.lightened(0.3)
 	body = _node(Vector3.ZERO)
 	head = body
-	Props.part(body, Props.sphere_mesh(0.27, 14, 8), Props.fur_mat(scale_color),
+	Props.part(body, _blob(0.27, 0.03, 811, 14, 8), Props.fur_mat(scale_color),
 		Vector3.ZERO, Vector3.ZERO, Vector3(0.62, 0.98, 1.66), "Body")
 	Props.part(body, Props.sphere_mesh(0.2, 10, 6), Props.fur_mat(belly),
 		Vector3(0, -0.06, 0.02), Vector3.ZERO, Vector3(0.55, 0.78, 1.5), "Belly")
@@ -579,6 +585,12 @@ func _eyes(parent: Node3D, x: float, y: float, z: float, radius: float) -> void:
 			Vector3(side * x, y - radius * 0.62, z + radius * 0.05), Vector3.ZERO,
 			Vector3(0.85, 0.2, 0.32), "LowerLid")
 		_eyes_nodes.append(eye)
+
+## Corpo com casca levemente irregular: esfera perfeita lê como "bolinha",
+## e a silhueta do animal fica quadrada quando o pelo não quebra o contorno.
+func _blob(radius: float, amplitude: float, noise_seed: int, segments := 18,
+		rings := 11) -> ArrayMesh:
+	return Props.organic_mesh(radius, segments, rings, amplitude, 2.1, noise_seed)
 
 func _fur_tufts(parent: Node3D, center: Vector3, coat: Color, count: int, spread: float,
 		size := 0.045, rows := 1) -> void:

@@ -35,4 +35,7 @@ func interact(player: Node3D) -> void:
 	Audio.play_sfx("click")
 	player_character.play_interact_animation()
 	player_character.set_aiming(true)
-	Game.toast("Mire nos 3 alvos e clique para lançar. Aperte E para sair da mira.", "✧")
+	if Missions.is_active("david_alvos"):
+		Game.toast("Mire nos 3 alvos e clique para lançar. Aperte E para sair da mira.", "✧")
+	else:
+		Game.toast("Treino livre: mire e clique. Os alvos valem ponto quando as outras missões do Davi terminarem.", "✧")

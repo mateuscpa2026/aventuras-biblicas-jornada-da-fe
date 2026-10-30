@@ -103,11 +103,11 @@ rejogados pelo menu **Capítulos**; os pergaminhos já guardados permanecem no
 ## Testes automatizados
 
 ```bash
-# 1) Sistemas, dados, missões, save, personagens, câmera e áudio (588 checagens)
+# 1) Sistemas, dados, missões, save, personagens, câmera e áudio (607 checagens)
 Godot_v4.7.2-stable_win64_console.exe --headless --path . res://tests/smoke_test.tscn
 
 # 2) Integração das cinco cenas: jogador, colisão, NPCs, animais, diálogo,
-#    pergaminhos, pedra da memória e conclusão de capítulo (391 checagens)
+#    pergaminhos, pedra da memória e conclusão de capítulo (419 checagens)
 Godot_v4.7.2-stable_win64_console.exe --headless --path . res://tests/world_test.tscn
 ```
 
@@ -168,7 +168,7 @@ Documentação complementar:
 
 - Os cinco capítulos existem, são jogáveis e concluíveis; a progressão
   desbloqueia o capítulo seguinte e o save sobrevive a recarregar/corromper.
-- `588` checagens de sistemas + `391` checagens de cenas, **0 falhas**.
+- `607` checagens de sistemas + `419` checagens de cenas, **0 falhas**.
 - A criança escolhe entre quatro exploradores com nomes bíblicos — dois meninos
   (Josué e Daniel) e duas meninas (Ester e Sara) — com prévia 3D; a escolha é
   persistida e aplicada em todos os mundos.
@@ -183,6 +183,13 @@ Documentação complementar:
 - Build Windows exportado e executado em modo de captura, gerando as imagens
   das cinco telas de mundo e dos menus; o instalador foi instalado e o jogo
   aberto a partir da pasta instalada.
+- Realismo nesta versão: trilhas de terra com bordas que se dissolvem no capim
+  (sem a fita escura que aparecia atrás do jogador), luz com mais contraste
+  entre sol e sombra, chão com granulação em escala de 3 m, copas com degradê
+  do topo claro à base escura e animais/cenário com silhuetas orgânicas em vez
+  de esferas e cones perfeitos.
+- Desempenho medido sem vsync: 64–84 FPS de média nos cinco mundos (mínima de
+  36 durante a primeira carga do Éden), acima da meta de 60 FPS com vsync.
 - O que ainda depende de validação humana: sensação de movimento/câmera em cada
   PC alvo e aprovação artística/áudio final (os recursos continuam provisórios
   por projeto). Ver limitações em `docs/RECURSOS_PROVISORIOS.md`.

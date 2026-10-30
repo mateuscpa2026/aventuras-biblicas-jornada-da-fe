@@ -129,6 +129,7 @@ func _build() -> void:
 	dot.color = UIKit.AMBER
 	dot.position = Vector2(15, 15)
 	dot.size = Vector2(6, 6)
+	dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_crosshair.add_child(dot)
 
 	var hint := UIKit.panel(Color(0.09, 0.15, 0.11, 0.6), 14, 8)
@@ -165,6 +166,7 @@ func _add_crosshair_parts(color: Color, grow: float) -> void:
 		line.color = color
 		line.position = rect.position
 		line.size = rect.size
+		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_crosshair.add_child(line)
 
 func setup(chapter: Dictionary) -> void:

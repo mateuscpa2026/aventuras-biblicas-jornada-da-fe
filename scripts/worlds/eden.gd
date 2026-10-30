@@ -56,7 +56,10 @@ func _build_scenery() -> void:
 		add_prop(Props.bush(randf_range(0.75, 1.1)), position)
 
 	EnvBuilder.forest(self, 34, 33.0, 45.0, Color("#4f9a54"), "mixed")
-	EnvBuilder.meadow(self, Color("#6fae66"), 46, 27.0)
+	EnvBuilder.ground_cover(self, Color("#5c9a53"), 600, 27.0)
+	EnvBuilder.ground_cover(self, Color("#5c9a53"), 260, 14.0, 0.09, 0.2)
+	EnvBuilder.path(self, [Vector3(0, 0, 10), Vector3(2, 0, 6), Vector3(-1, 0, 1),
+		Vector3(-6, 0, -5), Vector3(-10, 0, -11)], 1.5, Color("#9a8258"), Color("#6fae66"))
 
 	var flower_colors := [Color("#f2b544"), Color("#e8846b"), Color("#f7d35c"), Color("#d98fb8")]
 	for i in 16:
@@ -80,10 +83,6 @@ func _build_scenery() -> void:
 		add_prop(Props.rock(randf_range(0.5, 0.85)), Vector3(-11 + cos(angle) * 5.1, 0, -13 + sin(angle) * 5.1),
 			Vector3(0, randf_range(0, 360), 0))
 	add_prop(Props.fireflies(26, Vector3(9, 2, 9)), Vector3(-11, 1.0, -12))
-
-	for i in 8:
-		Props.part(self, Props.box_mesh(Vector3(1.4, 0.08, 0.9)), Props.mat(Color("#e8d6ab"), 1.0),
-			Vector3(randf_range(-0.6, 0.6), 0.04, 9.0 - i * 1.5), Vector3(0, randf_range(-9, 9), 0))
 
 	add_prop(Props.signpost("Jardim do Éden", Color("#58a86b")), Vector3(2.8, 0, 11), Vector3(0, -20, 0))
 
