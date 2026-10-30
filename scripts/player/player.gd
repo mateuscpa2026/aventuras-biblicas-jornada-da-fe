@@ -24,6 +24,8 @@ var spawn_point := Vector3(0, 0.1, 0)
 var _focus_clock := 0.0
 var _last_prompt := ""
 var _fall_guard := 0.0
+var _wade := 0.0
+var _water_clock := 0.0
 
 func _ready() -> void:
 	add_to_group("player")
@@ -67,6 +69,11 @@ func _physics_process(delta: float) -> void:
 	elif velocity.y < 0.0:
 		velocity.y = -0.6
 
+	_water_clock -= delta
+	if _water_clock <= 0.0:
+		_water_clock = 0.15
+		_update_wade()
+
 	var input_dir := Vector2.ZERO
 	if input_enabled:
 		input_dir = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -83,6 +90,8 @@ func _physics_process(delta: float) -> void:
 		speed_cap *= 0.45
 	if not is_on_floor():
 		speed_cap *= 0.85
+	if _wade > 0.02:
+		speed_cap *= lerpf(0.8, 0.42, clampf(_wade / 0.95, 0.0, 1.0))
 
 	var target_velocity := direction * speed_cap
 	var horizontal := Vector3(velocity.x, 0, velocity.z)
@@ -96,7 +105,8 @@ func _physics_process(delta: float) -> void:
 	velocity.z = horizontal.z
 
 	if input_enabled and is_on_floor() and not aiming and Input.is_action_just_pressed("jump"):
-		velocity.y = JUMP_VELOCITY
+		# na água funda o salto quase não sobe: o personagem está pesado
+		velocity.y = JUMP_VELOCITY * (1.0 - 0.7 * clampf(_wade / 0.95, 0.0, 1.0))
 		Audio.play_sfx("jump", randf_range(0.95, 1.05))
 
 	move_and_slide()
@@ -117,6 +127,15 @@ func _physics_process(delta: float) -> void:
 	if global_position.y < -16.0:
 		global_position = spawn_point
 		velocity = Vector3.ZERO
+
+## Quanto de água há sobre os pés do personagem (0 = em terra firme).
+func _update_wade() -> void:
+	var deepest := 0.0
+	for node in get_tree().get_nodes_in_group("water"):
+		var water := node as WaterVolume
+		if water:
+			deepest = maxf(deepest, water.submersion(global_position))
+	_wade = deepest
 
 func _update_focus() -> void:
 	var text := ""

@@ -95,7 +95,7 @@ Cobre:
 O teste salva uma cópia do save do jogador no início e restaura no final, então
 rodá-lo não apaga progresso real.
 
-## `world_test` — integração das cenas (419 checagens)
+## `world_test` — integração das cenas (434 checagens)
 
 Para cada um dos cinco mundos (`eden`, `ark`, `david`, `moses`, `jesus`),
 instancia a cena real e verifica:
@@ -109,6 +109,11 @@ instancia a cena real e verifica:
   por mundo) e de cada montanha (15–18), e lança um raio de 2 m acima de um
   arbusto até 1 m abaixo do chão, conferindo que ele bate no colisor daquele
   arbusto (rochas, árvores, pinheiros e palmeiras já eram sólidos);
+- **lagoa do Éden**: existe uma única `WaterVolume`, a bacia tem malha e
+  colisor próprios, o fundo fica a mais de 0,9 m abaixo da superfície; soltando
+  o jogador no miolo ele desce até o fundo (y ≈ −1,12), fica submerso e o jogo
+  mede a lâmina d'água (`_wade` > 0,8 m); os dois peixes nadam abaixo da
+  superfície;
 - pelo menos 6 objetos interativos e pelo menos 2 NPCs com diálogo e nome
   (Moisés usa 4 viajantes em vez de animais);
 - os personagens principais listados em `cast` existem como NPCs do mundo

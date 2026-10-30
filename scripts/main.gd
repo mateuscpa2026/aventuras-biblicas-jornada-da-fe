@@ -50,6 +50,9 @@ var _fade: ColorRect
 var _capture_mode := false
 var _capture_dir := ""
 var _capture_world := ""
+var _capture_at := Vector3.ZERO
+var _capture_look := Vector3.ZERO
+var _capture_view := false
 var _save_snapshot: Dictionary = {}
 
 func _ready() -> void:
@@ -666,11 +669,23 @@ func _handle_capture_args() -> void:
 			_capture_dir = str(arg).substr("--capture=".length())
 		elif str(arg).begins_with("--capture-world="):
 			_capture_world = str(arg).substr("--capture-world=".length())
+		elif str(arg).begins_with("--capture-at="):
+			_capture_at = _capture_vector(str(arg).substr("--capture-at=".length()))
+			_capture_view = true
+		elif str(arg).begins_with("--capture-look="):
+			_capture_look = _capture_vector(str(arg).substr("--capture-look=".length()))
+			_capture_view = true
 	if not _capture_mode:
 		return
 	DirAccess.make_dir_recursive_absolute(_capture_dir)
 	for path in [SaveSystem.SAVE_PATH, SaveSystem.BACKUP_PATH]:
 		_save_snapshot[path] = FileAccess.get_file_as_string(path) if FileAccess.file_exists(path) else null
+
+func _capture_vector(text: String) -> Vector3:
+	var parts := text.split_floats(",")
+	if parts.size() < 3:
+		return Vector3.ZERO
+	return Vector3(parts[0], parts[1], parts[2])
 
 func _run_capture() -> void:
 	await get_tree().process_frame
@@ -716,6 +731,15 @@ func _run_capture() -> void:
 			intro.skip()
 		await _wait(0.9)
 		await _capture("06_" + world_id + "_mundo")
+		if _capture_view:
+			var player := Game.get_player()
+			if player:
+				player.global_position = _capture_at
+				player.velocity = Vector3.ZERO
+				if player.camera_rig:
+					player.camera_rig.look_at_immediate((_capture_look - _capture_at).normalized())
+				await _wait(0.9)
+				await _capture("07_" + world_id + "_vista")
 		_show_menu()
 		await _wait(0.35)
 

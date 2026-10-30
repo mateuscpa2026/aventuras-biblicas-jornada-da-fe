@@ -201,6 +201,40 @@ func _test_world(world_id: String) -> void:
 			expect(ring.required_mission == "david_alvos", "david: argola só pontua no desafio dos alvos")
 			expect(not ring.is_hit, "david: argola começa inteira")
 
+	if world_id == "eden":
+		var lakes := world.find_children("*", "WaterVolume", true, false)
+		expect(lakes.size() == 1, "eden: uma lagoa no jardim (%d)" % lakes.size())
+		var lake: WaterVolume = lakes[0] if not lakes.is_empty() else null
+		expect(world.find_child("PondBed", true, false) != null, "eden: bacia da lagoa esculpida no chão")
+		expect(world.find_child("PondBedCollision", true, false) != null, "eden: fundo da lagoa tem colisor")
+		expect(world.find_child("PondReeds", true, false) != null, "eden: juncos na beira da lagoa")
+		if lake != null and is_instance_valid(player):
+			var center := Vector3(lake.global_position.x, 0.0, lake.global_position.z)
+			var surface: float = lake.surface_y
+			expect(lake.floor_y(center) < surface - 0.9, "eden: fundo do lago fica a mais de 0,9 m (%.2f)"
+				% (surface - lake.floor_y(center)))
+			expect(lake.submersion(center + Vector3(0, surface - 0.5, 0)) > 0.4,
+				"eden: meio metro abaixo da superfície ainda é água")
+			player.global_position = center + Vector3(0, surface + 0.7, 0)
+			player.velocity = Vector3.ZERO
+			await _wait(1.8)
+			expect(player.global_position.y < surface - 0.5,
+				"eden: personagem desce até o fundo da lagoa (y=%.2f)" % player.global_position.y)
+			expect(lake.submersion(player.global_position) > 0.85,
+				"eden: personagem fica submerso na água funda")
+			expect(player._wade > 0.8, "eden: o jogo mede a profundidade da água (%.2f m)" % player._wade)
+			var fish_down := true
+			var fish_count := 0
+			for animal in _find(world, "animal"):
+				if animal.kind == "fish":
+					fish_count += 1
+					if animal.global_position.y > surface - 0.2:
+						fish_down = false
+			expect(fish_count >= 2, "eden: dois peixes nadando na lagoa (%d)" % fish_count)
+			expect(fish_down, "eden: peixes ficam submersos abaixo da superfície")
+			player.global_position = world.spawn_position
+			player.velocity = Vector3.ZERO
+
 	var npcs := _find(world, "npc")
 	expect(npcs.size() >= 2, "%s: pelo menos 2 NPCs (%d)" % [world_id, npcs.size()])
 	var npc_ids := {}

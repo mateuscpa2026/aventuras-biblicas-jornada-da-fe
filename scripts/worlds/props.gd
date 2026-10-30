@@ -169,6 +169,23 @@ static func ground_mat(color: Color) -> StandardMaterial3D:
 	_materials[key] = m
 	return m
 
+## Fundo da lagoa: mesmo grão do chão, mas com base neutra — aqui a cor vem toda
+## do vértice (areia seca, areia molhada e lodo), não do albedo verde.
+static func pond_mat() -> StandardMaterial3D:
+	var key := "pond"
+	if _materials.has(key):
+		return _materials[key]
+	var m := StandardMaterial3D.new()
+	m.albedo_color = Color.WHITE
+	m.albedo_texture = _grain_texture("ground", 0.13, 301, 0.78, 1.02)
+	m.roughness = 1.0
+	m.metallic = 0.0
+	m.uv1_scale = Vector3(40.0, 40.0, 1.0)
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	m.vertex_color_use_as_albedo = true
+	_materials[key] = m
+	return m
+
 ## Trilha de terra batida: fita rasa sobre o campo, com grão mais grosso que o chão.
 static func path_mat(color: Color) -> StandardMaterial3D:
 	var key := "path|%s" % color.to_html(true)
@@ -1039,20 +1056,79 @@ static func bridge(length := 6.0, width := 2.2) -> Node3D:
 	collider_box(root, Vector3(width, 0.3, length), Vector3(0, 0.5, 0))
 	return root
 
-static func water_disc(radius: float, color := Color("#6fb3c9")) -> Node3D:
+## Espelho d'água da lagoa: disco fino e translúcido, com um anel de espuma
+## onde a água encontra a areia. Transparência alta para o que está mergulhado
+## (peixes, pernas, fundo) continuar visível.
+static func water_surface(radius: float) -> Node3D:
 	var root := Node3D.new()
-	root.name = "Water"
-	part(root, cylinder_mesh(radius, radius, 0.06, 32), mat(color, 0.1, 0.15, 0.75), Vector3.ZERO)
+	root.name = "Surface"
+	var sheet := mat(Color("#356f8f"), 0.06, 0.05, 0.46)
+	var mirror := part(root, cylinder_mesh(radius, radius, 0.03, 48), sheet,
+		Vector3.ZERO, Vector3.ZERO, Vector3.ONE, "Mirror")
+	mirror.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var ring := part(root, torus_mesh(radius - 0.06, radius + 0.005, 48, 5),
+		unshaded(Color("#dff3fb"), 0.12), Vector3(0, 0.015, 0), Vector3.ZERO, Vector3.ONE, "Foam")
+	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	return root
 
+## Junco da beira d'água: haste fina com a espiga marrom no alto.
+static func reed(height := 1.1) -> Node3D:
+	var root := Node3D.new()
+	root.name = "Reed"
+	var stem := mat(Color("#719c4c"), 0.95)
+	part(root, cylinder_mesh(0.014, 0.026, height, 6), stem,
+		Vector3(0, height * 0.5, 0), Vector3.ZERO, Vector3.ONE, "Stem")
+	part(root, capsule_mesh(0.14, 0.03, 6), mat(Color("#7a5738"), 0.9),
+		Vector3(0, height, 0), Vector3.ZERO, Vector3.ONE, "Cattail")
+	root.rotation_degrees = Vector3(randf_range(-6, 6), randf_range(0, 360), randf_range(-6, 6))
+	return root
+
+## Vitória-régia: disco verde plano com uma florzinha clara.
+static func lily_pad(size := 0.24) -> Node3D:
+	var root := Node3D.new()
+	root.name = "LilyPad"
+	part(root, cylinder_mesh(size, size, 0.015, 12), mat(Color("#4f8f45"), 0.8),
+		Vector3.ZERO, Vector3.ZERO, Vector3(1.0, 1.0, 0.82), "Pad")
+	part(root, sphere_mesh(size * 0.18, 8, 5), mat(Color("#f3c7d6"), 0.7),
+		Vector3(size * 0.18, 0.008, 0), Vector3.ZERO, Vector3(1.0, 0.7, 1.0), "Flower")
+	return root
+
+## Cachoeira: colunas de água com alturas diferentes (a borda de baixo fica
+## irregular, não um retângulo), riscos brancos e espuma onde ela cai.
 static func water_wall(width: float, height: float, depth: float) -> Node3D:
 	var root := Node3D.new()
-	root.name = "WaterWall"
-	var water := mat(Color("#4f9fd0"), 0.15, 0.25, 0.7)
-	part(root, box_mesh(Vector3(width, height, depth)), water, Vector3.ZERO)
-	for i in 5:
-		part(root, cylinder_mesh(0.0, 0.5 + i * 0.15, 1.0, 7), mat(Color("#d9f2ff"), 0.2, 0.5, 0.8),
-			Vector3(randf_range(-width * 0.45, width * 0.45), -height * 0.5 + 0.4, randf_range(-depth * 0.4, depth * 0.4)))
+	root.name = "Waterfall"
+	var columns := [
+		[-0.32, 0.38, 0.94, Color("#4b90b8"), 0.5],
+		[0.0, 0.4, 1.0, Color("#5aa3ca"), 0.46],
+		[0.32, 0.36, 0.9, Color("#4b90b8"), 0.5],
+	]
+	for column in columns:
+		var blade := part(root, box_mesh(Vector3(width * float(column[1]), height * float(column[2]), depth * 0.6)),
+			mat(column[3], 0.12, 0.18, float(column[4])),
+			Vector3(width * float(column[0]), height * (0.5 - float(column[2]) * 0.5) - randf_range(0.0, 0.12) * height,
+				randf_range(-0.05, 0.05)))
+		blade.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	for i in 8:
+		var streak := part(root, box_mesh(Vector3(randf_range(0.015, 0.04), height * randf_range(0.5, 0.8), 0.015)),
+			unshaded(Color("#eefaff"), 0.4),
+			Vector3(randf_range(-width * 0.42, width * 0.42), height * randf_range(0.02, 0.16),
+				depth * 0.3 + randf_range(-0.02, 0.04)))
+		streak.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	# espuma na base: rola para os lados, então fica mais larga que a queda
+	for i in 7:
+		var spread := float(i) / 6.0 * 2.0 - 1.0
+		var puff := part(root, sphere_mesh(randf_range(0.14, 0.22), 8, 5),
+			unshaded(Color("#f2fbff"), 0.4),
+			Vector3(spread * width * 0.5, -height * 0.5 + randf_range(0.0, 0.08), randf_range(0.04, 0.2)),
+			Vector3.ZERO, Vector3(1.3, 0.5, 1.0), "Foam")
+		puff.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	for i in 3:
+		var mist := part(root, sphere_mesh(randf_range(0.22, 0.34), 8, 5),
+			unshaded(Color("#f7fdff"), 0.22),
+			Vector3(randf_range(-width * 0.3, width * 0.3), -height * 0.5 + randf_range(0.25, 0.5), 0.14),
+			Vector3.ZERO, Vector3(1.1, 0.7, 0.6), "Mist")
+		mist.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	return root
 
 static func cloud(size := 1.0) -> Node3D:

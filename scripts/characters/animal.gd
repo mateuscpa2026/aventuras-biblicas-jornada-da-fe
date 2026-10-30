@@ -19,6 +19,7 @@ const KIND_LABELS := {
 }
 
 var rig: AnimalRig
+var lake: WaterVolume
 var following := false
 var delivered := false
 var cared := false
@@ -45,8 +46,24 @@ func _ready() -> void:
 		active = false
 		interact_radius = 0.1
 		wander_radius_setup(1.4)
+		lake = _find_lake()
 	elif kind == "bird":
 		home_radius = 5.0
+
+## Lagoa em que o peixe está nadando: a mais próxima cuja bacia o contém.
+func _find_lake() -> WaterVolume:
+	var best: WaterVolume = null
+	var best_distance := INF
+	for node in get_tree().get_nodes_in_group("water"):
+		var water := node as WaterVolume
+		if water == null:
+			continue
+		var distance := Vector2(global_position.x - water.global_position.x,
+			global_position.z - water.global_position.z).length()
+		if distance < water.basin_radius and distance < best_distance:
+			best = water
+			best_distance = distance
+	return best
 
 func wander_radius_setup(radius: float) -> void:
 	home_radius = radius
@@ -113,7 +130,17 @@ func _process(delta: float) -> void:
 	elif kind == "fish":
 		_speed = 0.6
 		var angle := _time * 0.55
-		global_position = _home + Vector3(cos(angle) * 1.3, sin(_time * 1.3) * 0.08, sin(angle) * 1.3)
+		var swim_radius := maxf(0.4, home_radius)
+		var spot := _home + Vector3(cos(angle) * swim_radius, 0.0, sin(angle) * swim_radius)
+		var bob := sin(_time * 1.3) * 0.06
+		if lake:
+			# entre o lodo e a superfície: nunca sai d'água nem fura o fundo
+			var floor_limit := lake.floor_y(spot) + 0.34
+			var ceiling := maxf(floor_limit, lake.surface_y - 0.34)
+			spot.y = clampf(_home.y + bob, floor_limit, ceiling)
+		else:
+			spot.y = _home.y + bob
+		global_position = spot
 		rotation.y = -angle
 	elif not delivered:
 		_wander(delta)

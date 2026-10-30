@@ -194,8 +194,225 @@ static func path(root: Node3D, points: Array, width := 1.6, color := Color("#8a7
 	root.add_child(instance)
 
 ## Capim espalhado em lote: um único mesh por tom, então sai barato.
+## Lagoa com bacia de verdade: o miolo do chão é rebaixado, a colisão vira um
+## fundo em declive e a beira ganha areia, juncos e pedras. Devolve o volume de
+## água para o jogador saber onde está submerso.
+static func pond(root: Node3D, center: Vector3, radius := 4.6, depth := 1.15,
+		grass := Color("#6fae66"), ground_size := 130.0) -> WaterVolume:
+	var cut := radius - 0.2
+	_cut_ground(root, center, cut)
+	_split_ground_collision(root, center, cut)
+
+	var bed := _pond_bed(center, radius, depth, radius + 2.4, grass, ground_size)
+	var bed_instance := MeshInstance3D.new()
+	bed_instance.name = "PondBed"
+	bed_instance.mesh = bed
+	root.add_child(bed_instance)
+	var bed_body := StaticBody3D.new()
+	bed_body.name = "PondBedCollision"
+	bed_body.collision_layer = 1
+	bed_body.collision_mask = 0
+	var bed_shape := CollisionShape3D.new()
+	bed_shape.shape = bed.create_trimesh_shape()
+	bed_body.add_child(bed_shape)
+	root.add_child(bed_body)
+
+	var water_y := POND_LIP - POND_WATERLINE
+	var lake := WaterVolume.new()
+	lake.name = "Lake"
+	lake.position = Vector3(center.x, 0.0, center.z)
+	lake.surface_y = water_y
+	lake.radius = radius * 0.8
+	lake.depth = depth - POND_WATERLINE
+	lake.lip_y = POND_LIP
+	lake.basin_radius = radius
+	lake.basin_depth = depth
+	lake.surface = Props.water_surface(lake.radius)
+	lake.surface.position.y = water_y
+	lake.add_child(lake.surface)
+	root.add_child(lake)
+
+	_pond_shore(root, center, radius, depth, lake.radius, water_y)
+	return lake
+
+const POND_LIP := 0.02
+const POND_WATERLINE := 0.14
+
+## Perfil do fundo: bacia suave (inclinação máxima ~20°, sempre caminhável) e
+## uma beirada que desce alguns milímetros para se fundir com o campo.
+static func _pond_height(distance: float, radius: float, depth: float) -> float:
+	if distance < radius:
+		var t := 1.0 - distance / radius
+		return POND_LIP - depth * (t * t * (3.0 - 2.0 * t))
+	var fade := clampf((distance - radius) / 1.8, 0.0, 1.0)
+	return lerpf(POND_LIP, 0.006, fade)
+
+## Recorta o chão em volta da bacia: triângulos que encostam no buraco saem da
+## malha, senão uma laje plana ficaria pairando sobre a água.
+static func _cut_ground(root: Node3D, center: Vector3, cut: float) -> void:
+	var instance := root.get_node_or_null("Ground") as MeshInstance3D
+	if instance == null or not (instance.mesh is ArrayMesh):
+		return
+	var mesh := instance.mesh as ArrayMesh
+	var arrays := mesh.surface_get_arrays(0)
+	var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+	if indices.is_empty():
+		return
+	var kept := PackedInt32Array()
+	for i in range(0, indices.size(), 3):
+		var a := verts[indices[i]]
+		var b := verts[indices[i + 1]]
+		var c := verts[indices[i + 2]]
+		var min_x := minf(a.x, minf(b.x, c.x))
+		var max_x := maxf(a.x, maxf(b.x, c.x))
+		var min_z := minf(a.z, minf(b.z, c.z))
+		var max_z := maxf(a.z, maxf(b.z, c.z))
+		var touches := max_x >= center.x - cut and min_x <= center.x + cut \
+			and max_z >= center.z - cut and min_z <= center.z + cut
+		if not touches:
+			kept.append(indices[i])
+			kept.append(indices[i + 1])
+			kept.append(indices[i + 2])
+	arrays[Mesh.ARRAY_INDEX] = kept
+	var cut_mesh := ArrayMesh.new()
+	cut_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	cut_mesh.surface_set_material(0, mesh.surface_get_material(0))
+	instance.mesh = cut_mesh
+
+## Troca a laje única do chão por quatro lajes em volta do buraco: o miolo fica
+## livre para o colisor da bacia, e o jogador desce até o fundo.
+static func _split_ground_collision(root: Node3D, center: Vector3, cut: float) -> void:
+	var body := root.get_node_or_null("GroundCollision") as StaticBody3D
+	if body == null or body.get_child_count() == 0:
+		return
+	var shape_node := body.get_child(0) as CollisionShape3D
+	var box := shape_node.shape as BoxShape3D if shape_node else null
+	if box == null:
+		return
+	var half_x := box.size.x * 0.5
+	var half_z := box.size.z * 0.5
+	var top := box.size.y * 0.5
+	var rects := [
+		Vector4(-half_x, center.x - cut, -half_z, half_z),
+		Vector4(center.x + cut, half_x, -half_z, half_z),
+		Vector4(center.x - cut, center.x + cut, -half_z, center.z - cut),
+		Vector4(center.x - cut, center.x + cut, center.z + cut, half_z),
+	]
+	shape_node.shape = null
+	body.remove_child(shape_node)
+	shape_node.queue_free()
+	for rect in rects:
+		var size := Vector3(rect.y - rect.x, box.size.y, rect.w - rect.z)
+		if size.x <= 0.01 or size.z <= 0.01:
+			continue
+		var piece := CollisionShape3D.new()
+		var piece_box := BoxShape3D.new()
+		piece_box.size = size
+		piece.shape = piece_box
+		piece.position = Vector3((rect.x + rect.y) * 0.5, -top, (rect.z + rect.w) * 0.5)
+		body.add_child(piece)
+
+## Malha da bacia: areia seca na beirada, areia molhada na linha d'água e lodo no
+## fundo, tudo em cor de vértice para o material continuar sendo o do chão.
+static func _pond_bed(center: Vector3, radius: float, depth: float, half: float,
+		grass: Color, ground_size: float) -> ArrayMesh:
+	var plane := PlaneMesh.new()
+	plane.size = Vector2(half * 2.0, half * 2.0)
+	plane.subdivide_width = 44
+	plane.subdivide_depth = 44
+	plane.center_offset = Vector3(center.x, 0.0, center.z)
+	var arrays := plane.get_mesh_arrays()
+	var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+	var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
+	var colors := PackedColorArray()
+	colors.resize(verts.size())
+	var dry := Color("#c9bb90")
+	var sand := Color("#d6c39b")
+	var wet := Color("#9f8c6c")
+	var silt := Color("#6b6150")
+	for i in verts.size():
+		var point := verts[i]
+		var delta := Vector2(point.x - center.x, point.z - center.z)
+		var distance := delta.length()
+		var height := _pond_height(distance, radius, depth)
+		verts[i] = Vector3(point.x, height, point.z)
+		var normal := Vector3.UP
+		if distance < radius and distance > 0.001:
+			var t := 1.0 - distance / radius
+			var slope := -6.0 * depth * t * (1.0 - t) / radius
+			var direction := delta / distance
+			normal = Vector3(-slope * direction.x, 1.0, -slope * direction.y).normalized()
+		normals[i] = normal
+		var drop := POND_LIP - height
+		var tone := 0.97 + sin(point.x * 1.7 + point.z * 0.9) * 0.02
+		var color := grass.lerp(dry, smoothstep(0.01, 0.05, drop))
+		color = color.lerp(sand, smoothstep(0.04, 0.1, drop))
+		color = color.lerp(wet, smoothstep(POND_WATERLINE - 0.02, POND_WATERLINE + 0.08, drop))
+		color = color.lerp(silt, smoothstep(0.6, 1.0, drop))
+		colors[i] = Color(color.r * tone, color.g * tone, color.b * tone)
+		uvs[i] = Vector2((point.x + ground_size * 0.5) / ground_size,
+			(point.z + ground_size * 0.5) / ground_size)
+	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_COLOR] = colors
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	mesh.surface_set_material(0, Props.pond_mat())
+	return mesh
+
+## Beira da lagoa: juncos em touceiras dentro da água rasa, pedras na areia e
+## vitórias-régias boiando. Nada disso precisa de colisor — o jogador atravessa.
+static func _pond_shore(root: Node3D, center: Vector3, radius: float, depth: float,
+		water_radius: float, water_y: float) -> void:
+	var reeds := Node3D.new()
+	reeds.name = "PondReeds"
+	root.add_child(reeds)
+	# juncos crescem em touceiras, não em círculo: cada grupo ocupa um trecho da beira
+	var clumps := 5
+	for i in clumps:
+		var base_angle := TAU * (float(i) + randf_range(-0.15, 0.15)) / float(clumps)
+		for j in randi_range(3, 5):
+			var angle := base_angle + randf_range(-0.28, 0.28)
+			var distance := radius * randf_range(0.72, 0.9)
+			var spot := Vector3(center.x + cos(angle) * distance, 0.0, center.z + sin(angle) * distance)
+			spot.y = _pond_height(distance, radius, depth)
+			var reed := Props.reed(randf_range(0.7, 1.35))
+			reed.position = spot
+			reeds.add_child(reed)
+	var stones := Node3D.new()
+	stones.name = "PondStones"
+	root.add_child(stones)
+	for i in 10:
+		var angle := TAU * randf_range(0.0, 1.0)
+		var distance := radius * randf_range(0.95, 1.1)
+		var spot := Vector3(center.x + cos(angle) * distance, 0.0, center.z + sin(angle) * distance)
+		spot.y = _pond_height(distance, radius, depth)
+		var stone := Props.rock(randf_range(0.22, 0.45))
+		stone.position = spot
+		stones.add_child(stone)
+	for i in 22:
+		var angle := TAU * float(i) / 22.0 + randf_range(-0.12, 0.12)
+		var distance := radius * randf_range(0.9, 1.08)
+		var spot := Vector3(center.x + cos(angle) * distance, 0.0, center.z + sin(angle) * distance)
+		spot.y = _pond_height(distance, radius, depth)
+		var pebble := Props.rock(randf_range(0.1, 0.2))
+		pebble.position = spot
+		stones.add_child(pebble)
+	for i in 5:
+		var angle := TAU * (float(i) + 0.3) / 5.0
+		var distance := water_radius * randf_range(0.25, 0.75)
+		var pad := Props.lily_pad(randf_range(0.16, 0.26))
+		pad.position = Vector3(center.x + cos(angle) * distance, water_y + 0.012,
+			center.z + sin(angle) * distance)
+		root.add_child(pad)
+
+## Chão rente ao chão, com a opção de manter um círculo livre (a lagoa):
+## `avoid` traz (x, z, raio) e nada de capim nasce lá dentro.
 static func ground_cover(root: Node3D, color: Color, count := 120, radius := 26.0,
-		min_height := 0.16, max_height := 0.4) -> void:
+		min_height := 0.16, max_height := 0.4, avoid := Vector3.ZERO) -> void:
 	var blade := Props.cylinder_mesh(0.0, 0.022, 1.0, 4)
 	var batches: Array = [[], [], []]
 	var keep_clear := Vector2(0.0, 15.0)
@@ -204,6 +421,8 @@ static func ground_cover(root: Node3D, color: Color, count := 120, radius := 26.
 		var distance := sqrt(randf()) * radius
 		var spot := Vector3(cos(angle) * distance, 0.0, sin(angle) * distance)
 		if Vector2(spot.x, spot.z).distance_to(keep_clear) < 3.5:
+			continue
+		if avoid.z > 0.0 and Vector2(spot.x - avoid.x, spot.z - avoid.y).length() < avoid.z:
 			continue
 		var blades := randi_range(5, 8)
 		for b in blades:

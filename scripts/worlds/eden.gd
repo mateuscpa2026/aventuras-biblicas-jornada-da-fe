@@ -2,6 +2,11 @@ extends WorldBase
 ## Jardim do Éden: cuidar dos animais, regar mudinhas, achar pergaminhos e
 ## resolver o desafio da pedra da memória.
 
+const LAKE_CENTER := Vector3(-11.0, 0.0, -13.0)
+const LAKE_RADIUS := 4.6
+const LAKE_DEPTH := 1.15
+const LAKE_AVOID := Vector3(-11.0, -13.0, 6.4)
+
 func _get_spawn_position() -> Vector3:
 	return Vector3(0, 0.2, 14)
 
@@ -28,6 +33,7 @@ func _build_environment() -> void:
 	})
 	set_environment(env["environment"] as WorldEnvironment, env["sun"] as DirectionalLight3D)
 	EnvBuilder.ground(self, Color("#6fae66"), 130.0)
+	EnvBuilder.pond(self, LAKE_CENTER, LAKE_RADIUS, LAKE_DEPTH, Color("#6fae66"), 130.0)
 	EnvBuilder.hills(self, Color("#79b871"), 16, 42.0, 68.0)
 	EnvBuilder.clouds(self, 9, 20.0)
 
@@ -56,10 +62,10 @@ func _build_scenery() -> void:
 		add_prop(Props.bush(randf_range(0.75, 1.1)), position)
 
 	EnvBuilder.forest(self, 34, 33.0, 45.0, Color("#4f9a54"), "mixed")
-	EnvBuilder.ground_cover(self, Color("#5c9a53"), 600, 27.0)
-	EnvBuilder.ground_cover(self, Color("#5c9a53"), 260, 14.0, 0.09, 0.2)
+	EnvBuilder.ground_cover(self, Color("#5c9a53"), 600, 27.0, 0.16, 0.4, LAKE_AVOID)
+	EnvBuilder.ground_cover(self, Color("#5c9a53"), 260, 14.0, 0.09, 0.2, LAKE_AVOID)
 	EnvBuilder.path(self, [Vector3(0, 0, 10), Vector3(2, 0, 6), Vector3(-1, 0, 1),
-		Vector3(-6, 0, -5), Vector3(-10, 0, -11)], 1.5, Color("#9a8258"), Color("#6fae66"))
+		Vector3(-6, 0, -5), Vector3(-10.2, 0, -7.9)], 1.5, Color("#9a8258"), Color("#6fae66"))
 
 	var flower_colors := [Color("#f2b544"), Color("#e8846b"), Color("#f7d35c"), Color("#d98fb8")]
 	for i in 16:
@@ -69,15 +75,26 @@ func _build_scenery() -> void:
 		add_prop(Props.flower_patch(flower_colors[i % flower_colors.size()], 1.1), position)
 
 	for i in 14:
-		add_prop(Props.grass_tuft(randf_range(0.8, 1.2)), Vector3(randf_range(-26, 26), 0, randf_range(-20, 22)))
+		var tuft := Vector3(randf_range(-26, 26), 0, randf_range(-20, 22))
+		if Vector2(tuft.x - LAKE_AVOID.x, tuft.z - LAKE_AVOID.y).length() < LAKE_AVOID.z:
+			continue
+		add_prop(Props.grass_tuft(randf_range(0.8, 1.2)), tuft)
 
 	var rock_spots := [Vector3(-16, 0, -12), Vector3(20, 0, 3), Vector3(-22, 0, 8), Vector3(14, 0, 10), Vector3(-6, 0, -18)]
 	for position in rock_spots:
 		add_prop(Props.rock(randf_range(0.8, 1.3)), position, Vector3(0, randf_range(0, 360), 0))
 
-	# Lagoa com cachoeira e pedras ao redor.
-	add_prop(Props.water_disc(4.8), Vector3(-11, 0.03, -13))
-	add_prop(Props.water_wall(3.2, 2.6, 0.5), Vector3(-11, 1.5, -17.6))
+	# Cachoeira na borda oposta, entre pedras: a água cai rente à beira e some na
+	# espuma. O espelho e a bacia vêm do EnvBuilder.pond.
+	add_prop(Props.water_wall(2.6, 2.2, 0.45), Vector3(-11, 0.96, -16.9))
+	var cliff := [
+		[Vector3(-2.9, 0, 0.2), 1.9], [Vector3(3.0, 0, 0.0), 2.0], [Vector3(-1.4, 0, -0.9), 1.6],
+		[Vector3(1.6, 0, -1.0), 1.7], [Vector3(0, 1.5, -0.4), 1.5], [Vector3(-5.0, 0, 0.6), 1.25],
+		[Vector3(5.1, 0, 0.4), 1.15], [Vector3(0, 2.3, 1.3), 1.1],
+	]
+	for entry in cliff:
+		add_prop(Props.rock(float(entry[1])), Vector3(-11, 0, -18.3) + (entry[0] as Vector3),
+			Vector3(0, randf_range(0, 360), 0))
 	for i in 7:
 		var angle := TAU * i / 7.0
 		add_prop(Props.rock(randf_range(0.5, 0.85)), Vector3(-11 + cos(angle) * 5.1, 0, -13 + sin(angle) * 5.1),
@@ -103,7 +120,11 @@ func _build_characters() -> void:
 		var animal := add_animal(str(entry[0]), entry[1])
 		animal.home_radius = float(entry[2])
 
-	add_animal("fish", Vector3(-11, 0.45, -13))
+	# Peixes nadando fundo, abaixo do espelho d'água.
+	var fish := add_animal("fish", Vector3(-11.0, -0.65, -13.0))
+	fish.wander_radius_setup(0.7)
+	var koi := add_animal("fish", Vector3(-10.6, -0.62, -13.6), {"body": Color("#7fb2d6")})
+	koi.wander_radius_setup(0.4)
 
 func _build_activities() -> void:
 	var plants := [

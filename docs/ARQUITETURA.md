@@ -49,6 +49,14 @@ limites, o cinturão de mata do perímetro (`forest`, com variação de tom por
 vegetação rasteira (`meadow`); `props.gd` fornece todas as peças procedurais
 (árvores, rochas, tendas, mercado, arca, animais, partículas).
 
+Água com profundidade (`env_builder.pond`): o chão é recortado, a laje de
+colisão é dividida em quatro em volta do buraco e uma malha própria — declive,
+areia, lodo e normais calculadas — vira o fundo caminhável. O `WaterVolume`
+(`scripts/worlds/water_volume.gd`) guarda a altura da superfície, o perfil do
+fundo e o raio, e responde `submersion()` ao jogador (que fica mais lento e
+salta menos na água funda) e `floor_y()` aos peixes, que assim nadam sempre
+entre o lodo e a superfície.
+
 Como o cenário é sempre igual (semente por mundo), o custo de render também é:
 `EnvBuilder.setup` usa um único mapa de sombra ortogonal de 1024 px e mantém a
 mata, as colinas e as peças pequenas fora dele (`shadows_off`/`Props.no_shadows`),

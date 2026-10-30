@@ -107,7 +107,7 @@ rejogados pelo menu **Capítulos**; os pergaminhos já guardados permanecem no
 Godot_v4.7.2-stable_win64_console.exe --headless --path . res://tests/smoke_test.tscn
 
 # 2) Integração das cinco cenas: jogador, colisão, NPCs, animais, diálogo,
-#    pergaminhos, pedra da memória e conclusão de capítulo (419 checagens)
+#    pergaminhos, pedra da memória e conclusão de capítulo (434 checagens)
 Godot_v4.7.2-stable_win64_console.exe --headless --path . res://tests/world_test.tscn
 ```
 
@@ -168,7 +168,7 @@ Documentação complementar:
 
 - Os cinco capítulos existem, são jogáveis e concluíveis; a progressão
   desbloqueia o capítulo seguinte e o save sobrevive a recarregar/corromper.
-- `607` checagens de sistemas + `419` checagens de cenas, **0 falhas**.
+- `607` checagens de sistemas + `434` checagens de cenas, **0 falhas**.
 - A criança escolhe entre quatro exploradores com nomes bíblicos — dois meninos
   (Josué e Daniel) e duas meninas (Ester e Sara) — com prévia 3D; a escolha é
   persistida e aplicada em todos os mundos.
@@ -188,8 +188,14 @@ Documentação complementar:
   entre sol e sombra, chão com granulação em escala de 3 m, copas com degradê
   do topo claro à base escura e animais/cenário com silhuetas orgânicas em vez
   de esferas e cones perfeitos.
-- Desempenho medido sem vsync: 64–84 FPS de média nos cinco mundos (mínima de
-  36 durante a primeira carga do Éden), acima da meta de 60 FPS com vsync.
+- A lagoa do Éden virou uma bacia de verdade: o chão foi rebaixado em declive
+  suave, a laje de colisão deu lugar a um fundo caminhável e a beira ganhou
+  areia seca, areia molhada, lodo, juncos em touceiras e pedras. Ao entrar, o
+  personagem desce até o fundo (cerca de 1 m no miolo) e fica com a água pela
+  altura do peito; a água tem transparência suficiente para ver o corpo e os
+  peixes, que nadam sempre abaixo da superfície.
+- Desempenho medido sem vsync: 68–91 FPS de média nos cinco mundos (mínima de
+  41 durante a primeira carga do Arca), acima da meta de 60 FPS com vsync.
 - O que ainda depende de validação humana: sensação de movimento/câmera em cada
   PC alvo e aprovação artística/áudio final (os recursos continuam provisórios
   por projeto). Ver limitações em `docs/RECURSOS_PROVISORIOS.md`.
